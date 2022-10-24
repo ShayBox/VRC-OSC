@@ -2,7 +2,8 @@ use clap::Parser;
 use clap_verbosity_flag::Verbosity;
 use rosc::{encoder, OscMessage, OscPacket, OscType};
 use rspotify::{
-    model::PlayableItem, prelude::*, scopes, AuthCodeSpotify, ClientResult, Credentials, OAuth,
+    model::PlayableItem, prelude::*, scopes, AuthCodeSpotify, ClientResult, Config, Credentials,
+    OAuth,
 };
 use std::{net::UdpSocket, time::Duration};
 use tiny_http::{Header, Response, Server};
@@ -46,7 +47,11 @@ fn main() {
         scopes: scopes!("user-read-playback-state"),
         ..Default::default()
     };
-    let mut spotify = AuthCodeSpotify::new(credentials, oauth);
+    let config = Config {
+        token_refreshing: true,
+        ..Default::default()
+    };
+    let mut spotify = AuthCodeSpotify::with_config(credentials, oauth, config);
     info!("Initialized Spotify");
 
     let url = spotify
