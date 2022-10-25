@@ -6,6 +6,7 @@ use rspotify::{
     OAuth,
 };
 use std::{net::UdpSocket, time::Duration};
+use terminal_link::Link;
 use tiny_http::{Header, Response, Server};
 
 #[macro_use]
@@ -85,15 +86,29 @@ fn main() {
 
         if track.name == previous_track {
             continue;
+        } else {
+            previous_track = track.name.to_owned();
         }
 
-        previous_track = track.name.to_owned();
-        println!("Now Playing: {:?}", track.name);
+        let artists = track
+            .artists
+            .iter()
+            .map(|a| a.name.to_owned())
+            .collect::<Vec<_>>()
+            .join(", ");
+
+        let text = format!("Now Playing: {} by {}", track.name, artists);
+        if let Some(href) = track.href {
+            let link = Link::new(&text, &href);
+            println!("{link}");
+        } else {
+            println!("{text}");
+        }
 
         let msg_buf = encoder::encode(&OscPacket::Message(OscMessage {
             addr: "/chatbox/input".to_string(),
             args: vec![
-                OscType::String(format!("Now Playing: {}", track.name)),
+                OscType::String(text),
                 OscType::Bool(true),
             ],
         }))
