@@ -17,3 +17,6 @@ Options:
   -q, --quiet...             Less output per occurrence
   -h, --help                 Print help information
 ```
+
+#### Screenshot
+![Screenshot](Screenshot.png)
