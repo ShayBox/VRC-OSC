@@ -1,9 +1,9 @@
-# Spotify VRChat OSC
+# Spotify-VRC-OSC
 
 Sends the currently playing track on Spotify to the VRChat Chatbox Keyboard via OSC
 
 #### Download
-[Latest Release](https://github.com/ShayBox/Spotify-VRChat-OSC/releases/latest)
+[Latest Release](https://github.com/ShayBox/Spotify-VRC-OSC/releases/latest)
 
 #### Usage
 ```
