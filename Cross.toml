@@ -1,0 +1,2 @@
+[build.env]
+passthrough = ["SPOTIFY_CLIENT", "SPOTIFY_SECRET"]
