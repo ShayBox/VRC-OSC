@@ -1,31 +1,19 @@
-[package]
-name = "spotify-vrc-osc"
-version = "0.2.0"
+[workspace]
+members = ["loader", "common", "plugin-spotify"]
+
+[workspace.package]
+version = "1.0.0"
+authors = ["Shayne Hartford <shaybox@shaybox.com>"]
 edition = "2021"
-description = "Sends the currently playing track on Spotify to the VRChat Chatbox Keyboard via OSC"
 readme = "README.md"
-repository = "https://github.com/ShayBox/Spotify-VRC-OSC"
+repository = "https://github.com/ShayBox/VRC-OSC"
 license = "MIT"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
-clap = { version = "4.0.18", features = ["derive"] }
-clap-verbosity-flag = { git = "https://github.com/ShayBoxs-Forks/clap-verbosity-flag.git", version = "2.0.0" }
-env_logger = "0.9.1"
-log = "0.4.17"
-rosc = "0.9.1"
-rspotify = { version = "0.11.5", default-features = false, features = [
-    "cli",
-    "client-ureq",
-    "ureq-rustls-tls",
-] }
-terminal-link = "0.1.0"
-tiny_http = "0.12.0"
-webbrowser = "0.8.0"
-
-[build-dependencies]
-winres = "0.1.12"
+[workspace.dependencies]
+abi_stable = { version = "0.10.4", default-features = false }
+common = { path = "common" }
+error-stack = "0.2.4"
+plugin-spotify = { path = "plugin-spotify" }
 
 [profile.release]
 strip = true

@@ -5,31 +5,44 @@ on:
 jobs:
   release:
     env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      SPOTIFY_CALLBACK: ${{ secrets.SPOTIFY_CALLBACK }}
       SPOTIFY_CLIENT: ${{ secrets.SPOTIFY_CLIENT }}
       SPOTIFY_SECRET: ${{ secrets.SPOTIFY_SECRET }}
     strategy:
       matrix:
         include:
           - target: aarch64-apple-darwin
-            os: macos-latest
+            runner: macos-latest
+            zip: vrc-osc,libspotify.dylib
           - target: aarch64-unknown-linux-gnu
-            os: ubuntu-latest
+            runner: ubuntu-latest
+            zip: vrc-osc,libspotify.so
           - target: i686-pc-windows-msvc
-            os: windows-latest
+            runner: windows-latest
+            zip: vrc-osc.exe,spotify.dll
           - target: i686-unknown-linux-gnu
-            os: ubuntu-latest
+            runner: ubuntu-latest
+            zip: vrc-osc,libspotify.so
           - target: x86_64-apple-darwin
-            os: macos-latest
+            runner: macos-latest
+            zip: vrc-osc,libspotify.dylib
           - target: x86_64-pc-windows-msvc
-            os: windows-latest
+            runner: windows-latest
+            zip: vrc-osc.exe,spotify.dll
           - target: x86_64-unknown-linux-gnu
-            os: ubuntu-latest
+            runner: ubuntu-latest
+            zip: vrc-osc,libspotify.so
     name: ${{ matrix.target }}
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v3
-      - uses: taiki-e/upload-rust-binary-action@v1
-        with:
-          bin: spotify-vrc-osc
-          target: ${{ matrix.target }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+      - run: rustup update stable
+      - run: rustup target add ${{ matrix.target }}
+      - run: cargo install cross
+      - run: cross build --release --target ${{ matrix.target }}
+      - run: zip -j ${{ matrix.target }}.zip target/${{ matrix.target }}/release/{${{ matrix.zip }}}
+        if: ${{ matrix.runner != 'windows-latest' }}
+      - run: bash -c '7z a ${{ matrix.target }}.zip ./target/${{ matrix.target }}/release/{${{ matrix.zip }}}'
+        if: ${{ matrix.runner == 'windows-latest' }}
+      - run: gh release upload ${{ github.ref_name }} ${{ matrix.target }}.zip --clobber
