@@ -9,11 +9,16 @@
 
 # VRC-OSC
 
-Dynamically loaded plugins in Rust
+Dynamically loaded cross-platform VRChat OSC plugins in Rust.
 
-#### Plugins
-- [`plugin-spotify`](/plugin-spotify): Sends the currently playing Spotify track to Chatbox
+### Plugins:
+- [`plugin-spotify`](/plugin-spotify): Sends the currently playing track from Spotify to the chatbox.
 
-#### Ideas
+### Ideas
+- [`plugin-controls`](/plugin-controls): Controls various system functions via avatar parameters.
+- [`plugin-debug`](/plugin-debug): Writes all received osc packets to a debug file.
+- [`plugin-lastfm`](/plugin-lastfm): Sends the currently playing track from LastFM to the chatbox.
+- [`plugin-librefm`](/plugin-librefm): Sends the currently playing track from LibreFM to the chatbox.
+
 I'd like to expand this project with a shared config and socket, and add more plugins.  
 If you want to help please feel free to join the [Discord](https://discord.shaybox.com)

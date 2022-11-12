@@ -1,11 +1,11 @@
 # Spotify Plugin
 
-Sends the currently playing Spotify track to Chatbox
+Sends the currently playing track from Spotify to the chatbox.
 
 #### Screenshot
 ![Screenshot](Screenshot.png)
 
-### How to Setup:
+### How to setup:
 1. Navigate to [Spotify for Developers Dashboard](https://developer.spotify.com/dashboard)
 2. Sign in or Create an account  
 ![image](https://user-images.githubusercontent.com/9505196/200721377-9b3c37a3-3a9f-48a9-89a7-b87fe2893d34.png)
@@ -24,5 +24,5 @@ Sends the currently playing Spotify track to Chatbox
 ![image](https://user-images.githubusercontent.com/9505196/200722400-f589d693-9a74-4833-ba6b-deb0f69be494.png)
 9. Click `SHOW CLIENT SECRET`  
 ![image](https://user-images.githubusercontent.com/9505196/200722502-eace09fd-554a-45c7-86b2-f29caa50fede.png)
-10. Copy your `Client ID` and `Client Secret` into `spotify.toml`  
-![image](https://user-images.githubusercontent.com/9505196/200722760-f580e6e5-d2dd-4555-b0c8-41895a8fdd4d.png)  
+10. Copy your `Client ID` into `spotify.toml`  
+![image](https://user-images.githubusercontent.com/9505196/201460592-5a0a550a-f44b-4f26-810c-6473861e308f.png)
