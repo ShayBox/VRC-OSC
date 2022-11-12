@@ -5,7 +5,7 @@ use rosc::{OscMessage, OscPacket, OscType};
 use rspotify::{
     model::PlayableItem,
     prelude::{BaseClient, OAuthClient},
-    scopes, AuthCodeSpotify, ClientResult, Config as SpotifyConfig, Credentials, OAuth,
+    scopes, AuthCodePkceSpotify, ClientResult, Config as SpotifyConfig, Credentials, OAuth,
 };
 use serde::{Deserialize, Serialize};
 use std::{
@@ -20,24 +20,21 @@ use tiny_http::{Header, Response, Server};
 
 const CONFIG_PATH: &str = "spotify.toml";
 const SPOTIFY_CLIENT: &str = env!("SPOTIFY_CLIENT");
-const SPOTIFY_SECRET: &str = env!("SPOTIFY_SECRET");
 const SPOTIFY_CALLBACK: &str = env!("SPOTIFY_CALLBACK");
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Config {
     bind_addr: String,
-    osc_addr: String,
     client_id: String,
-    client_secret: String,
+    osc_addr: String,
     polling: u64,
 }
 impl Default for Config {
     fn default() -> Config {
         Config {
             bind_addr: "0.0.0.0:9001".into(),
-            osc_addr: "127.0.0.1:9000".into(),
             client_id: SPOTIFY_CLIENT.into(),
-            client_secret: SPOTIFY_SECRET.into(),
+            osc_addr: "127.0.0.1:9000".into(),
             polling: 5,
         }
     }
@@ -61,8 +58,8 @@ pub fn new() -> () {
             .into_report()
             .change_context(Error::IOError)?;
 
-        let mut spotify = AuthCodeSpotify::with_config(
-            Credentials::new(SPOTIFY_CLIENT, SPOTIFY_SECRET),
+        let mut spotify = AuthCodePkceSpotify::with_config(
+            Credentials::new_pkce(SPOTIFY_CLIENT),
             OAuth {
                 redirect_uri: format!("http://{}", SPOTIFY_CALLBACK),
                 scopes: scopes!("user-read-playback-state"),
@@ -75,7 +72,7 @@ pub fn new() -> () {
         );
 
         let auth_url = spotify
-            .get_authorize_url(false)
+            .get_authorize_url(None)
             .expect("Failed to get Spotify authorization url");
         prompt_for_token(&mut spotify, &auth_url, SPOTIFY_CALLBACK)
             .expect("Failed to authorize Spotify");
@@ -158,7 +155,7 @@ fn load_config() -> Result<Config, Error> {
     }
 }
 
-fn prompt_for_token(spotify: &mut AuthCodeSpotify, url: &str, addr: &str) -> ClientResult<()> {
+fn prompt_for_token(spotify: &mut AuthCodePkceSpotify, url: &str, addr: &str) -> ClientResult<()> {
     match spotify.read_token_cache(true) {
         Ok(Some(new_token)) => {
             let expired = new_token.is_expired();
@@ -191,7 +188,11 @@ fn prompt_for_token(spotify: &mut AuthCodeSpotify, url: &str, addr: &str) -> Cli
     spotify.write_token_cache()
 }
 
-fn get_code_from_user(spotify: &AuthCodeSpotify, url: &str, addr: &str) -> ClientResult<String> {
+fn get_code_from_user(
+    spotify: &AuthCodePkceSpotify,
+    url: &str,
+    addr: &str,
+) -> ClientResult<String> {
     use rspotify::ClientError;
 
     match webbrowser::open(url) {

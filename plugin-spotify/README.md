@@ -2,6 +2,9 @@
 
 Sends the currently playing Spotify track to Chatbox
 
+#### Screenshot
+![Screenshot](Screenshot.png)
+
 ### How to Setup:
 1. Navigate to [Spotify for Developers Dashboard](https://developer.spotify.com/dashboard)
 2. Sign in or Create an account  
