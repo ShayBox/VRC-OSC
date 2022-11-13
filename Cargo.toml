@@ -2,7 +2,7 @@
 members = ["loader", "common", "plugin-spotify"]
 
 [workspace.package]
-version = "1.0.1"
+version = "1.0.2"
 authors = ["Shayne Hartford <shaybox@shaybox.com>"]
 edition = "2021"
 readme = "README.md"

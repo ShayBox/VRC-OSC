@@ -59,7 +59,7 @@ pub fn new() -> () {
             .change_context(Error::IOError)?;
 
         let mut spotify = AuthCodePkceSpotify::with_config(
-            Credentials::new_pkce(SPOTIFY_CLIENT),
+            Credentials::new_pkce(&config.client_id),
             OAuth {
                 redirect_uri: format!("http://{}", SPOTIFY_CALLBACK),
                 scopes: scopes!("user-read-playback-state"),
