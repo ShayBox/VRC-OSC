@@ -1,4 +1,9 @@
-use abi_stable::{export_root_module, prefix_type::PrefixTypeTrait, sabi_extern_fn};
+use abi_stable::{
+    export_root_module,
+    prefix_type::PrefixTypeTrait,
+    sabi_extern_fn,
+    std_types::{RSliceMut, RString},
+};
 use common::{Error, OSCMod, OSCMod_Ref};
 use error_stack::{IntoReport, Result, ResultExt};
 use rosc::{OscMessage, OscPacket, OscType};
@@ -24,17 +29,13 @@ const SPOTIFY_CALLBACK: &str = env!("SPOTIFY_CALLBACK");
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Config {
-    bind_addr: String,
     client_id: String,
-    osc_addr: String,
     polling: u64,
 }
 impl Default for Config {
     fn default() -> Config {
         Config {
-            bind_addr: "0.0.0.0:9001".into(),
             client_id: SPOTIFY_CLIENT.into(),
-            osc_addr: "127.0.0.1:9000".into(),
             polling: 5,
         }
     }
@@ -42,19 +43,15 @@ impl Default for Config {
 
 #[export_root_module]
 fn instantiate_root_module() -> OSCMod_Ref {
-    OSCMod { new }.leak_into_prefix()
+    OSCMod { new, message }.leak_into_prefix()
 }
 
 #[sabi_extern_fn]
-pub fn new() -> () {
-    thread::spawn(|| -> Result<(), Error> {
+pub fn new(osc_addr: RString, _verbose: bool) -> () {
+    thread::spawn(move || -> Result<(), Error> {
         let config = load_config()?;
 
-        let osc = UdpSocket::bind(&config.bind_addr)
-            .into_report()
-            .change_context(Error::IOError)?;
-
-        osc.connect(&config.osc_addr)
+        let osc = UdpSocket::bind("127.0.0.1:0")
             .into_report()
             .change_context(Error::IOError)?;
 
@@ -121,10 +118,14 @@ pub fn new() -> () {
                 args: vec![OscType::String(text), OscType::Bool(true)],
             }))
             .expect("Failed to encode osc message");
-            osc.send(&msg_buf).expect("Failed to send osc message");
+            osc.send_to(&msg_buf, &osc_addr.to_string())
+                .expect("Failed to send osc message");
         }
     });
 }
+
+#[sabi_extern_fn]
+pub fn message(_size: usize, _buf: RSliceMut<u8>, _verbose: bool) -> () {}
 
 fn load_config() -> Result<Config, Error> {
     let mut file = OpenOptions::new()

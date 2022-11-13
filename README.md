@@ -12,11 +12,11 @@
 Dynamically loaded cross-platform VRChat OSC plugins in Rust.
 
 ### Plugins:
+- [`plugin-debug`](/plugin-debug): Print all received packets, enable `verbose` in `config.toml`.
 - [`plugin-spotify`](/plugin-spotify): Sends the currently playing track from Spotify to the chatbox.
 
 ### Ideas
 - [`plugin-controls`](/plugin-controls): Controls various system functions via avatar parameters.
-- [`plugin-debug`](/plugin-debug): Writes all received osc packets to a debug file.
 - [`plugin-lastfm`](/plugin-lastfm): Sends the currently playing track from LastFM to the chatbox.
 - [`plugin-librefm`](/plugin-librefm): Sends the currently playing track from LibreFM to the chatbox.
 

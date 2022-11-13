@@ -1,8 +1,8 @@
 [workspace]
-members = ["loader", "common", "plugin-spotify"]
+members = ["common", "loader", "plugin-debug", "plugin-spotify"]
 
 [workspace.package]
-version = "1.0.2"
+version = "1.1.0"
 authors = ["Shayne Hartford <shaybox@shaybox.com>"]
 edition = "2021"
 readme = "README.md"
@@ -10,10 +10,12 @@ repository = "https://github.com/ShayBox/VRC-OSC"
 license = "MIT"
 
 [workspace.dependencies]
-abi_stable = { version = "0.10.4", default-features = false }
+abi_stable = { version = "0.10.4", default-features = false, features = [
+    "rust_latest_stable",
+] }
 common = { path = "common" }
 error-stack = "0.2.4"
-plugin-spotify = { path = "plugin-spotify" }
+rosc = "0.9.1"
 
 [profile.release]
 strip = true

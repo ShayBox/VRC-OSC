@@ -1,6 +1,5 @@
 [package]
-name = "common"
-description = "Common interface for dynamically loaded plugins"
+name = "plugin-debug"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true
@@ -10,8 +9,14 @@ license.workspace = true
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[lib]
+name = "debug"
+crate-type = ["cdylib"]
+
 [dependencies]
 abi_stable = { workspace = true, default-features = false, features = [
     "rust_latest_stable",
 ] }
+common.workspace = true
 error-stack.workspace = true
+rosc.workspace = true
