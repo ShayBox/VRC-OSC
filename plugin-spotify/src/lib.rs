@@ -1,10 +1,8 @@
 use abi_stable::{
-    export_root_module,
-    prefix_type::PrefixTypeTrait,
-    sabi_extern_fn,
-    std_types::{RSliceMut, RString},
+    export_root_module, prefix_type::PrefixTypeTrait, sabi_extern_fn, sabi_trait::TD_Opaque,
+    std_types::RSliceMut,
 };
-use common::{Error, OSCMod, OSCMod_Ref};
+use common::{config::VrcConfig, error::VRCError, OSCMod, OSCMod_Ref, State, StateBox, State_TO};
 use error_stack::{IntoReport, Result, ResultExt};
 use rosc::{OscMessage, OscPacket, OscType};
 use rspotify::{
@@ -12,32 +10,17 @@ use rspotify::{
     prelude::{BaseClient, OAuthClient},
     scopes, AuthCodePkceSpotify, ClientResult, Config as SpotifyConfig, Credentials, OAuth,
 };
-use serde::{Deserialize, Serialize};
-use std::{
-    fs::OpenOptions,
-    io::{Read, Write},
-    net::UdpSocket,
-    thread,
-    time::Duration,
-};
+use std::{net::UdpSocket, thread, time::Duration};
 use terminal_link::Link;
 use tiny_http::{Header, Response, Server};
 
-const CONFIG_PATH: &str = "spotify.toml";
-const SPOTIFY_CLIENT: &str = env!("SPOTIFY_CLIENT");
-const SPOTIFY_CALLBACK: &str = env!("SPOTIFY_CALLBACK");
-
-#[derive(Debug, Serialize, Deserialize)]
-struct Config {
-    client_id: String,
-    polling: u64,
+#[derive(Clone, Debug)]
+struct SpotifyState {
+    enable: bool,
 }
-impl Default for Config {
-    fn default() -> Config {
-        Config {
-            client_id: SPOTIFY_CLIENT.into(),
-            polling: 5,
-        }
+impl State for SpotifyState {
+    fn is_enabled(&self) -> bool {
+        self.enable
     }
 }
 
@@ -47,114 +30,92 @@ fn instantiate_root_module() -> OSCMod_Ref {
 }
 
 #[sabi_extern_fn]
-pub fn new(osc_addr: RString, _verbose: bool) -> () {
-    thread::spawn(move || -> Result<(), Error> {
-        let config = load_config()?;
+pub fn new() -> StateBox {
+    let config = VrcConfig::load().unwrap();
+    let state = SpotifyState {
+        enable: config.spotify.enable,
+    };
 
-        let osc = UdpSocket::bind("127.0.0.1:0")
-            .into_report()
-            .change_context(Error::IOError)?;
+    if config.spotify.enable {
+        thread::spawn(move || -> Result<(), VRCError> {
+            let osc = UdpSocket::bind("127.0.0.1:0")
+                .into_report()
+                .change_context(VRCError::IOError)?;
 
-        let mut spotify = AuthCodePkceSpotify::with_config(
-            Credentials::new_pkce(&config.client_id),
-            OAuth {
-                redirect_uri: format!("http://{}", SPOTIFY_CALLBACK),
-                scopes: scopes!("user-read-playback-state"),
-                ..Default::default()
-            },
-            SpotifyConfig {
-                token_refreshing: true,
-                ..Default::default()
-            },
-        );
+            let mut spotify = AuthCodePkceSpotify::with_config(
+                Credentials::new_pkce(&config.spotify.client_id),
+                OAuth {
+                    redirect_uri: format!("http://{}", &config.spotify.callback_uri),
+                    scopes: scopes!("user-read-playback-state"),
+                    ..Default::default()
+                },
+                SpotifyConfig {
+                    token_refreshing: true,
+                    ..Default::default()
+                },
+            );
 
-        let auth_url = spotify
-            .get_authorize_url(None)
-            .expect("Failed to get Spotify authorization url");
-        prompt_for_token(&mut spotify, &auth_url, SPOTIFY_CALLBACK)
-            .expect("Failed to authorize Spotify");
+            let auth_url = spotify
+                .get_authorize_url(None)
+                .expect("Failed to get Spotify authorization url");
+            prompt_for_token(&mut spotify, &auth_url, &config.spotify.callback_uri)
+                .expect("Failed to authorize Spotify");
 
-        let mut previous_track = "".to_string();
-        loop {
-            std::thread::sleep(Duration::from_secs(config.polling));
+            let mut previous_track = "".to_string();
+            loop {
+                std::thread::sleep(Duration::from_secs(config.spotify.polling));
 
-            let playing = spotify
-                .current_user_playing_item()
-                .expect("Failed to get users currently playing item");
+                let playing = spotify
+                    .current_user_playing_item()
+                    .expect("Failed to get users currently playing item");
 
-            let Some(playing) = playing else {
+                let Some(playing) = playing else {
                 continue;
             };
-            let Some(item) = playing.item else {
+                let Some(item) = playing.item else {
                 continue;
             };
-            let PlayableItem::Track(track) = item else {
+                let PlayableItem::Track(track) = item else {
                 continue;
             };
 
-            if track.name == previous_track {
-                continue;
-            } else {
-                previous_track = track.name.to_owned();
+                if track.name == previous_track {
+                    continue;
+                } else {
+                    previous_track = track.name.to_owned();
+                }
+
+                let artists = track
+                    .artists
+                    .iter()
+                    .map(|a| a.name.to_owned())
+                    .collect::<Vec<_>>()
+                    .join(", ");
+
+                let text = format!("Now Playing: {} by {}", track.name, artists);
+                if let Some(href) = track.href {
+                    let link = Link::new(&text, &href);
+                    println!("{link}");
+                } else {
+                    println!("{text}");
+                }
+
+                let msg_buf = rosc::encoder::encode(&OscPacket::Message(OscMessage {
+                    addr: "/chatbox/input".to_string(),
+                    args: vec![OscType::String(text), OscType::Bool(true)],
+                }))
+                .expect("Failed to encode osc message");
+                osc.send_to(&msg_buf, &config.osc.send_addr)
+                    .expect("Failed to send osc message");
             }
+        });
+    }
 
-            let artists = track
-                .artists
-                .iter()
-                .map(|a| a.name.to_owned())
-                .collect::<Vec<_>>()
-                .join(", ");
-
-            let text = format!("Now Playing: {} by {}", track.name, artists);
-            if let Some(href) = track.href {
-                let link = Link::new(&text, &href);
-                println!("{link}");
-            } else {
-                println!("{text}");
-            }
-
-            let msg_buf = rosc::encoder::encode(&OscPacket::Message(OscMessage {
-                addr: "/chatbox/input".to_string(),
-                args: vec![OscType::String(text), OscType::Bool(true)],
-            }))
-            .expect("Failed to encode osc message");
-            osc.send_to(&msg_buf, &osc_addr.to_string())
-                .expect("Failed to send osc message");
-        }
-    });
+    State_TO::from_value(state, TD_Opaque)
 }
 
 #[sabi_extern_fn]
-pub fn message(_size: usize, _buf: RSliceMut<u8>, _verbose: bool) -> () {}
-
-fn load_config() -> Result<Config, Error> {
-    let mut file = OpenOptions::new()
-        .read(true)
-        .write(true)
-        .create(true)
-        .open(CONFIG_PATH)
-        .into_report()
-        .change_context(Error::IOError)
-        .attach_printable(format!("Failed to open {CONFIG_PATH}"))?;
-    let mut content = String::new();
-    file.read_to_string(&mut content)
-        .into_report()
-        .change_context(Error::IOError)
-        .attach_printable(format!("Failed to read {CONFIG_PATH}"))?;
-    match toml::from_str(&content) {
-        Ok(config) => Ok(config),
-        Err(_) => {
-            let config = Config::default();
-            let text = toml::to_string(&config)
-                .into_report()
-                .change_context(Error::TOMLError)?;
-            file.write_all(text.as_bytes())
-                .into_report()
-                .change_context(Error::IOError)?;
-            Ok(config)
-        }
-    }
-}
+pub fn message(_state: &StateBox, _size: usize, _buf: RSliceMut<u8>) -> () {}
 
 fn prompt_for_token(spotify: &mut AuthCodePkceSpotify, url: &str, addr: &str) -> ClientResult<()> {
     match spotify.read_token_cache(true) {

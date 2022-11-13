@@ -17,8 +17,6 @@ abi_stable = { workspace = true, default-features = false, features = [
 common.workspace = true
 error-stack.workspace = true
 rosc.workspace = true
-serde = { version = "1.0.147", features = ["derive"] }
-toml = "0.5.9"
 
 [build-dependencies]
 winres = "0.1.12"

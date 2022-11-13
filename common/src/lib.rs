@@ -1,45 +1,31 @@
+#![allow(repr_transparent_external_private_fields)]
+
 use abi_stable::{
     declare_root_module_statics,
     library::RootModule,
     package_version_strings,
     sabi_types::VersionStrings,
-    std_types::{RSliceMut, RString},
+    std_types::{RBox, RSliceMut},
     StableAbi,
 };
-use error_stack::Context;
-use std::fmt;
 
-#[derive(Debug)]
-pub enum Error {
-    IOError,
-    LibraryError,
-    None,
-    OscError,
-    SerdeError,
-    TOMLError,
+pub mod config;
+pub mod error;
+
+#[abi_stable::sabi_trait]
+pub trait State: Debug {
+    fn is_enabled(&self) -> bool;
 }
-impl Context for Error {}
-impl fmt::Display for Error {
-    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match &self {
-            Error::IOError => fmt.write_str("IOError"),
-            Error::LibraryError => fmt.write_str("LibraryError"),
-            Error::None => fmt.write_str("None"),
-            Error::OscError => fmt.write_str("OscError"),
-            Error::SerdeError => fmt.write_str("SerdeError"),
-            Error::TOMLError => fmt.write_str("TOMLError"),
-        }
-    }
-}
+pub type StateBox = State_TO<'static, RBox<()>>;
 
 #[repr(C)]
 #[derive(StableAbi)]
 #[sabi(kind(Prefix))]
 pub struct OSCMod {
-    pub new: extern "C" fn(osc_addr: RString, verbose: bool) -> (),
+    pub new: extern "C" fn() -> StateBox,
 
     #[sabi(last_prefix_field)]
-    pub message: extern "C" fn(size: usize, buf: RSliceMut<u8>, verbose: bool) -> (),
+    pub message: extern "C" fn(state: &StateBox, size: usize, buf: RSliceMut<u8>) -> (),
 }
 
 impl RootModule for OSCMod_Ref {

@@ -1,5 +1,6 @@
 [package]
 name = "plugin-debug"
+description = "Prints all received packets to console"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true
