@@ -24,5 +24,6 @@ Sends the currently playing track from Spotify to the chatbox.
 ![image](https://user-images.githubusercontent.com/9505196/200722400-f589d693-9a74-4833-ba6b-deb0f69be494.png)
 9. Click `SHOW CLIENT SECRET`  
 ![image](https://user-images.githubusercontent.com/9505196/200722502-eace09fd-554a-45c7-86b2-f29caa50fede.png)
-10. Copy your `Client ID` into `spotify.toml`  
+10. Copy your `Client ID` into `config.toml` (Created at first-run)  
 ![image](https://user-images.githubusercontent.com/9505196/201460592-5a0a550a-f44b-4f26-810c-6473861e308f.png)
+![image](https://user-images.githubusercontent.com/9505196/201528488-baaa772c-a358-4395-9b97-33786cfdf821.png)

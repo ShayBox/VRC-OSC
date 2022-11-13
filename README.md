@@ -12,7 +12,7 @@
 Dynamically loaded cross-platform VRChat OSC plugins in Rust.
 
 ### Plugins:
-- [`plugin-debug`](/plugin-debug): Print all received packets, enable `verbose` in `config.toml`.
+- [`plugin-debug`](/plugin-debug): Print all received packets, enable debug in `config.toml`.
 - [`plugin-spotify`](/plugin-spotify): Sends the currently playing track from Spotify to the chatbox.
 
 ### Ideas
