@@ -8,6 +8,7 @@ pub enum VRCError {
     None,
     OscError,
     SerdeError,
+    SpotifyError,
     TOMLError,
 }
 
@@ -20,6 +21,7 @@ impl fmt::Display for VRCError {
             VRCError::None => fmt.write_str("None"),
             VRCError::OscError => fmt.write_str("OscError"),
             VRCError::SerdeError => fmt.write_str("SerdeError"),
+            VRCError::SpotifyError => fmt.write_str("SpotifyError"),
             VRCError::TOMLError => fmt.write_str("TOMLError"),
         }
     }

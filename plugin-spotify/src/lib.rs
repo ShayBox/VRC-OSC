@@ -57,9 +57,12 @@ pub fn new() -> StateBox {
 
             let auth_url = spotify
                 .get_authorize_url(None)
-                .expect("Failed to get Spotify authorization url");
+                .into_report()
+                .change_context(VRCError::SpotifyError)?;
+
             prompt_for_token(&mut spotify, &auth_url, &config.spotify.callback_uri)
-                .expect("Failed to authorize Spotify");
+                .into_report()
+                .change_context(VRCError::SpotifyError)?;
 
             let mut previous_track = "".to_string();
             loop {
@@ -67,17 +70,18 @@ pub fn new() -> StateBox {
 
                 let playing = spotify
                     .current_user_playing_item()
-                    .expect("Failed to get users currently playing item");
+                    .into_report()
+                    .change_context(VRCError::SpotifyError)?;
 
                 let Some(playing) = playing else {
-                continue;
-            };
+                    continue;
+                };
                 let Some(item) = playing.item else {
-                continue;
-            };
+                    continue;
+                };
                 let PlayableItem::Track(track) = item else {
-                continue;
-            };
+                    continue;
+                };
 
                 if track.name == previous_track {
                     continue;
@@ -93,20 +97,25 @@ pub fn new() -> StateBox {
                     .join(", ");
 
                 let text = format!("Now Playing: {} by {}", track.name, artists);
-                if let Some(href) = track.href {
+                if let Some(href) = track.external_urls.get("spotify") {
                     let link = Link::new(&text, &href);
                     println!("{link}");
                 } else {
                     println!("{text}");
                 }
 
-                let msg_buf = rosc::encoder::encode(&OscPacket::Message(OscMessage {
+                let message = OscPacket::Message(OscMessage {
                     addr: "/chatbox/input".to_string(),
                     args: vec![OscType::String(text), OscType::Bool(true)],
-                }))
-                .expect("Failed to encode osc message");
+                });
+
+                let msg_buf = rosc::encoder::encode(&message)
+                    .into_report()
+                    .change_context(VRCError::OscError)?;
+
                 osc.send_to(&msg_buf, &config.osc.send_addr)
-                    .expect("Failed to send osc message");
+                    .into_report()
+                    .change_context(VRCError::OscError)?;
             }
         });
     }

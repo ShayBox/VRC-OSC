@@ -205,7 +205,7 @@ dependencies = [
 
 [[package]]
 name = "common"
-version = "1.2.0"
+version = "1.2.1"
 dependencies = [
  "abi_stable",
  "error-stack",
@@ -841,7 +841,7 @@ checksum = "478c572c3d73181ff3c2539045f6eb99e5491218eae919370993b890cdbdd98e"
 
 [[package]]
 name = "plugin-debug"
-version = "1.2.0"
+version = "1.2.1"
 dependencies = [
  "abi_stable",
  "common",
@@ -851,7 +851,7 @@ dependencies = [
 
 [[package]]
 name = "plugin-spotify"
-version = "1.2.0"
+version = "1.2.1"
 dependencies = [
  "abi_stable",
  "common",
@@ -1425,7 +1425,7 @@ checksum = "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f"
 
 [[package]]
 name = "vrc-osc"
-version = "1.2.0"
+version = "1.2.1"
 dependencies = [
  "abi_stable",
  "common",

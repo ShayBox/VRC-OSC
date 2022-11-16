@@ -32,6 +32,7 @@ pub struct SpotifyConfig {
     pub client_id: String,
     pub enable: bool,
     pub polling: u64,
+    pub send_once: bool,
 }
 
 impl Default for VrcConfig {
@@ -47,6 +48,7 @@ impl Default for VrcConfig {
                 client_id: env!("SPOTIFY_CLIENT").to_string(),
                 enable: true,
                 polling: 5,
+                send_once: true,
             },
         }
     }
