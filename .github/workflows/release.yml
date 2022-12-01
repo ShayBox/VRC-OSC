@@ -58,11 +58,11 @@ jobs:
 
       - name: Create Zip Archive (Windows)
         if: ${{ matrix.runner == 'windows-latest' }}
-        run: bash -c '7z a ${{ matrix.target }}.zip ./target/${{ matrix.target }}/release/{${{ matrix.zip }}}'
+        run: bash -c '7z a ${{ matrix.name }}.zip ./target/${{ matrix.target }}/release/{${{ matrix.zip }}}'
 
       - name: Create Zip Archive (Other)
         if: ${{ matrix.runner != 'windows-latest' }}
-        run: zip -j ${{ matrix.target }}.zip target/${{ matrix.target }}/release/{${{ matrix.zip }}}
+        run: zip -j ${{ matrix.name }}.zip target/${{ matrix.target }}/release/{${{ matrix.zip }}}
 
       - name: Upload Zip Archive
-        run: gh release upload ${{ github.ref_name }} ${{ matrix.target }}.zip --clobber
+        run: gh release upload ${{ github.ref_name }} ${{ matrix.name }}.zip --clobber
