@@ -2,7 +2,7 @@
 members = ["common", "loader", "plugin-debug", "plugin-spotify"]
 
 [workspace.package]
-version = "1.2.1"
+version = "1.3.0"
 authors = ["Shayne Hartford <shaybox@shaybox.com>"]
 edition = "2021"
 readme = "README.md"
@@ -10,7 +10,7 @@ repository = "https://github.com/ShayBox/VRC-OSC"
 license = "MIT"
 
 [workspace.dependencies]
-abi_stable = { version = "0.10.4", default-features = false, features = [
+abi_stable = { version = "0.11", default-features = false, features = [
     "rust_latest_stable",
 ] }
 common = { path = "common" }

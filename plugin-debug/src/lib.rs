@@ -30,10 +30,10 @@ pub fn new() -> StateBox {
 }
 
 #[sabi_extern_fn]
-pub fn message(state: &StateBox, size: usize, buf: RSliceMut<u8>) -> () {
+pub fn message(state: &StateBox, size: usize, buf: RSliceMut<u8>) {
     let (_, packet) = rosc::decoder::decode_udp(&buf[..size]).unwrap();
     let OscPacket::Message(packet) = packet else {
-        return (); // VRChat doesn't have bundles afaik
+        return; // VRChat doesn't have bundles afaik
     };
 
     if state.is_enabled() {

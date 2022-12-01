@@ -2,10 +2,10 @@
 
 Sends the currently playing track from Spotify to the chatbox.
 
-#### Screenshot
+## Screenshot
 ![Screenshot](Screenshot.png)
 
-### How to setup:
+## How to setup:
 1. Navigate to [Spotify for Developers Dashboard](https://developer.spotify.com/dashboard)
 2. Sign in or Create an account  
 ![image](https://user-images.githubusercontent.com/9505196/200721377-9b3c37a3-3a9f-48a9-89a7-b87fe2893d34.png)
@@ -26,4 +26,3 @@ Sends the currently playing track from Spotify to the chatbox.
 ![image](https://user-images.githubusercontent.com/9505196/200722502-eace09fd-554a-45c7-86b2-f29caa50fede.png)
 10. Copy your `Client ID` into `config.toml` (Created at first-run)  
 ![image](https://user-images.githubusercontent.com/9505196/201460592-5a0a550a-f44b-4f26-810c-6473861e308f.png)
-![image](https://user-images.githubusercontent.com/9505196/201528488-baaa772c-a358-4395-9b97-33786cfdf821.png)

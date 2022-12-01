@@ -18,12 +18,9 @@ crate-type = ["cdylib"]
 abi_stable.workspace = true
 common.workspace = true
 error-stack.workspace = true
+ferrispot = { version = "0.2.0", features = ["sync"] }
 rosc.workspace = true
-rspotify = { version = "0.11.5", default-features = false, features = [
-    "cli",
-    "client-ureq",
-    "ureq-rustls-tls",
-] }
 terminal-link = "0.1.0"
 tiny_http = "0.12.0"
+url = "2.3.1"
 webbrowser = "0.8.0"

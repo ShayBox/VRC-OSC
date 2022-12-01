@@ -2,17 +2,26 @@ use abi_stable::{
     export_root_module, prefix_type::PrefixTypeTrait, sabi_extern_fn, sabi_trait::TD_Opaque,
     std_types::RSliceMut,
 };
-use common::{config::VrcConfig, error::VRCError, OSCMod, OSCMod_Ref, State, StateBox, State_TO};
-use error_stack::{IntoReport, Result, ResultExt};
-use rosc::{OscMessage, OscPacket, OscType};
-use rspotify::{
-    model::PlayableItem,
-    prelude::{BaseClient, OAuthClient},
-    scopes, AuthCodePkceSpotify, ClientResult, Config as SpotifyConfig, Credentials, OAuth,
+use common::{config::VrcConfig, error::VrcError, OSCMod, OSCMod_Ref, State, StateBox, State_TO};
+use error_stack::{bail, IntoReport, Result, ResultExt};
+use ferrispot::{
+    client::{
+        authorization_code::{
+            SyncAuthorizationCodeUserClient, SyncIncompleteAuthorizationCodeUserClient,
+        },
+        SpotifyClientBuilder,
+    },
+    model::playback::PlayingType,
+    prelude::{
+        AccessTokenRefreshSync, CommonArtistInformation, CommonTrackInformation, ScopedSyncClient,
+    },
+    scope::Scope,
 };
+use rosc::{OscMessage, OscPacket, OscType};
 use std::{net::UdpSocket, thread, time::Duration};
 use terminal_link::Link;
 use tiny_http::{Header, Response, Server};
+use url::Url;
 
 #[derive(Clone, Debug)]
 struct SpotifyState {
@@ -31,91 +40,112 @@ fn instantiate_root_module() -> OSCMod_Ref {
 
 #[sabi_extern_fn]
 pub fn new() -> StateBox {
-    let config = VrcConfig::load().unwrap();
+    let mut config = VrcConfig::load().unwrap();
     let state = SpotifyState {
         enable: config.spotify.enable,
     };
 
     if config.spotify.enable {
-        thread::spawn(move || -> Result<(), VRCError> {
+        thread::spawn(move || -> Result<(), VrcError> {
             let osc = UdpSocket::bind("127.0.0.1:0")
                 .into_report()
-                .change_context(VRCError::IOError)?;
+                .change_context(VrcError::Osc)?;
 
-            let mut spotify = AuthCodePkceSpotify::with_config(
-                Credentials::new_pkce(&config.spotify.client_id),
-                OAuth {
-                    redirect_uri: format!("http://{}", &config.spotify.callback_uri),
-                    scopes: scopes!("user-read-playback-state"),
-                    ..Default::default()
-                },
-                SpotifyConfig {
-                    token_refreshing: true,
-                    ..Default::default()
-                },
-            );
+            let user_client = if config.spotify.pkce {
+                let spotify_client =
+                    SpotifyClientBuilder::new(&config.spotify.client_id).build_sync();
 
-            let auth_url = spotify
-                .get_authorize_url(None)
-                .into_report()
-                .change_context(VRCError::SpotifyError)?;
+                match spotify_client.authorization_code_client_with_refresh_token_and_pkce(
+                    &config.spotify.refresh_token,
+                ) {
+                    Ok(user_client) => user_client,
+                    Err(_) => {
+                        let incomplete_auth_code_client = spotify_client
+                            .authorization_code_client_with_pkce(&config.spotify.redirect_uri)
+                            .scopes([Scope::UserReadPlaybackState])
+                            .build();
 
-            prompt_for_token(&mut spotify, &auth_url, &config.spotify.callback_uri)
-                .into_report()
-                .change_context(VRCError::SpotifyError)?;
+                        prompt_user_for_authorization(&mut config, incomplete_auth_code_client)?
+                    }
+                }
+            } else {
+                let spotify_client = SpotifyClientBuilder::new(&config.spotify.client_id)
+                    .client_secret(&config.spotify.client_secret)
+                    .build_sync()
+                    .into_report()
+                    .change_context(VrcError::Spotify)
+                    .attach_printable("Failed to build Spotify client")?;
+
+                match spotify_client
+                    .authorization_code_client_with_refresh_token(&config.spotify.refresh_token)
+                {
+                    Ok(user_client) => user_client,
+                    Err(_) => {
+                        let incomplete_auth_code_client = spotify_client
+                            .authorization_code_client(&config.spotify.redirect_uri)
+                            .scopes([Scope::UserReadPlaybackState])
+                            .build();
+
+                        prompt_user_for_authorization(&mut config, incomplete_auth_code_client)?
+                    }
+                }
+            };
 
             let mut previous_track = "".to_string();
             loop {
                 std::thread::sleep(Duration::from_secs(config.spotify.polling));
 
-                let playing = spotify
-                    .current_user_playing_item()
+                let Some(track) = user_client
+                    .currently_playing_track()
                     .into_report()
-                    .change_context(VRCError::SpotifyError)?;
-
-                let Some(playing) = playing else {
-                    continue;
-                };
-                let Some(item) = playing.item else {
-                    continue;
-                };
-                let PlayableItem::Track(track) = item else {
+                    .change_context(VrcError::Spotify)?
+                else {
                     continue;
                 };
 
-                if track.name == previous_track {
+                let Some(item) = track.public_playing_item() else {
                     continue;
-                } else {
-                    previous_track = track.name.to_owned();
-                }
+                };
 
-                let artists = track
-                    .artists
-                    .iter()
-                    .map(|a| a.name.to_owned())
-                    .collect::<Vec<_>>()
-                    .join(", ");
+                let PlayingType::Track(full_track) = item.item() else {
+                    continue;
+                };
 
-                let text = format!("Now Playing: {} by {}", track.name, artists);
-                if let Some(href) = track.external_urls.get("spotify") {
-                    let link = Link::new(&text, &href);
-                    println!("{link}");
-                } else {
-                    println!("{text}");
+                let text = format!(
+                    "Now Playing: {} by {}",
+                    full_track.name(),
+                    full_track
+                        .artists()
+                        .iter()
+                        .map(|a| a.name())
+                        .collect::<Vec<_>>()
+                        .join(", "),
+                );
+
+                if full_track.name() != previous_track {
+                    previous_track = full_track.name().into();
+                    if let Some(href) = &full_track.external_urls().spotify {
+                        let link = Link::new(&text, href);
+                        println!("{link}");
+                    } else {
+                        println!("{text}");
+                    }
+                } else if config.spotify.send_once {
+                    continue;
                 }
 
                 let message = OscPacket::Message(OscMessage {
-                    addr: "/chatbox/input".to_string(),
+                    addr: "/chatbox/input".into(),
                     args: vec![OscType::String(text), OscType::Bool(true)],
                 });
 
                 let msg_buf = rosc::encoder::encode(&message)
                     .into_report()
-                    .change_context(VRCError::OscError)?;
+                    .change_context(VrcError::Osc)?;
 
                 osc.send_to(&msg_buf, &config.osc.send_addr)
                     .into_report()
-                    .change_context(VRCError::OscError)?;
+                    .change_context(VrcError::Osc)?;
             }
         });
     }
@@ -124,48 +154,34 @@ pub fn new() -> StateBox {
 }
 
 #[sabi_extern_fn]
-pub fn message(_state: &StateBox, _size: usize, _buf: RSliceMut<u8>) -> () {}
+pub fn message(_state: &StateBox, _size: usize, _buf: RSliceMut<u8>) {}
 
-fn prompt_for_token(spotify: &mut AuthCodePkceSpotify, url: &str, addr: &str) -> ClientResult<()> {
-    match spotify.read_token_cache(true) {
-        Ok(Some(new_token)) => {
-            let expired = new_token.is_expired();
+fn prompt_user_for_authorization(
+    config: &mut VrcConfig,
+    incomplete_auth_code_client: SyncIncompleteAuthorizationCodeUserClient,
+) -> Result<SyncAuthorizationCodeUserClient, VrcError> {
+    let authorize_url = incomplete_auth_code_client.get_authorize_url();
+    let redirect_uri = &config.spotify.redirect_uri;
 
-            // Load token into client regardless of whether it's expired o
-            // not, since it will be refreshed later anyway.
-            *spotify.get_token().lock().unwrap() = Some(new_token);
+    let (code, state) = get_query_from_user(&authorize_url, redirect_uri)?;
 
-            if expired {
-                // Ensure that we actually got a token from the refetch
-                match spotify.refetch_token()? {
-                    Some(refreshed_token) => {
-                        *spotify.get_token().lock().unwrap() = Some(refreshed_token)
-                    }
-                    // If not, prompt the user for it
-                    None => {
-                        let code = get_code_from_user(spotify, url, addr)?;
-                        spotify.request_token(&code)?;
-                    }
-                }
-            }
-        }
-        // Otherwise following the usual procedure to get the token.
-        _ => {
-            let code = get_code_from_user(spotify, url, addr)?;
-            spotify.request_token(&code)?;
-        }
-    }
+    let user_client = incomplete_auth_code_client
+        .finalize(code.trim(), state.trim())
+        .into_report()
+        .change_context(VrcError::Spotify)?;
 
-    spotify.write_token_cache()
+    user_client
+        .refresh_access_token()
+        .into_report()
+        .change_context(VrcError::Spotify)?;
+
+    config.spotify.refresh_token = user_client.get_refresh_token();
+    config.save()?;
+
+    Ok(user_client)
 }
 
-fn get_code_from_user(
-    spotify: &AuthCodePkceSpotify,
-    url: &str,
-    addr: &str,
-) -> ClientResult<String> {
-    use rspotify::ClientError;
-
+fn get_query_from_user(url: &str, uri: &str) -> Result<(String, String), VrcError> {
     match webbrowser::open(url) {
         Ok(ok) => ok,
         Err(why) => eprintln!(
@@ -175,25 +191,38 @@ fn get_code_from_user(
         ),
     }
 
-    let server = Server::http(&addr).expect("Failed to bind server");
+    let addr = uri.replace("http://", "").replace("https://", "");
+    let server = Server::http(addr).expect("Failed to bind server");
     let request = match server.recv() {
         Ok(rq) => rq,
         Err(e) => panic!("Failed to get request: {e}"),
     };
-    let url = format!("http://{addr}{}", request.url());
-    let code = spotify
-        .parse_response_code(&url)
-        .ok_or_else(|| ClientError::Cli("unable to parse the response code".to_string()))?;
-    let mut response = Response::from_string(
-        " \
-            <h1>You may close this tab</h1> \
-            <script>window.close()</script> \
-        ",
-    );
-    let header = Header::from_bytes(&b"Content-Type"[..], &b"text/html"[..])
-        .expect("Failed to parse header");
+
+    let request_url = uri.to_owned() + request.url();
+    let parsed_url = Url::parse(&request_url)
+        .into_report()
+        .change_context(VrcError::Url)?;
+
+    let header = Header::from_bytes(&b"Content-Type"[..], &b"text/html"[..]).unwrap();
+    let mut response;
+    if parsed_url.query_pairs().count() == 2 {
+        response = Response::from_string(
+            "<h1>You may close this tab</h1> \
+                <script>window.close()</script>",
+        );
+    } else {
+        response = Response::from_string("<h1>An error has occured</h1>");
+    }
+
     response.add_header(header);
     request.respond(response).expect("Failed to send response");
 
-    Ok(code)
+    let Some(code) = parsed_url.query_pairs().next() else {
+        bail!(VrcError::None)
+    };
+    let Some(state) = parsed_url.query_pairs().nth(1) else {
+        bail!(VrcError::None)
+    };
+
+    Ok((code.1.into(), state.1.into()))
 }

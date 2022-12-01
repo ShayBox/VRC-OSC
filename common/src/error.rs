@@ -2,27 +2,29 @@ use error_stack::Context;
 use std::fmt;
 
 #[derive(Debug)]
-pub enum VRCError {
-    IOError,
-    LibraryError,
+pub enum VrcError {
+    Io,
+    Library,
     None,
-    OscError,
-    SerdeError,
-    SpotifyError,
-    TOMLError,
+    Osc,
+    Serde,
+    Spotify,
+    Toml,
+    Url,
 }
 
-impl Context for VRCError {}
-impl fmt::Display for VRCError {
+impl Context for VrcError {}
+impl fmt::Display for VrcError {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         match &self {
-            VRCError::IOError => fmt.write_str("IOError"),
-            VRCError::LibraryError => fmt.write_str("LibraryError"),
-            VRCError::None => fmt.write_str("None"),
-            VRCError::OscError => fmt.write_str("OscError"),
-            VRCError::SerdeError => fmt.write_str("SerdeError"),
-            VRCError::SpotifyError => fmt.write_str("SpotifyError"),
-            VRCError::TOMLError => fmt.write_str("TOMLError"),
+            VrcError::Io => fmt.write_str("IoError"),
+            VrcError::Library => fmt.write_str("LibraryError"),
+            VrcError::None => fmt.write_str("None"),
+            VrcError::Osc => fmt.write_str("OscError"),
+            VrcError::Serde => fmt.write_str("SerdeError"),
+            VrcError::Spotify => fmt.write_str("SpotifyError"),
+            VrcError::Toml => fmt.write_str("TomlError"),
+            VrcError::Url => fmt.write_str("UrlError"),
         }
     }
 }

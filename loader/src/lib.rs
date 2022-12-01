@@ -1,21 +1,21 @@
-use common::{error::VRCError, OSCMod_Ref, StateBox};
+use common::{error::VrcError, OSCMod_Ref, StateBox};
 use error_stack::{bail, IntoReport, Result, ResultExt};
 use std::{collections::HashMap, ffi::OsStr, result::Result as StdResult};
 
-pub fn load_plugins() -> Result<HashMap<String, (OSCMod_Ref, StateBox)>, VRCError> {
+pub fn load_plugins() -> Result<HashMap<String, (OSCMod_Ref, StateBox)>, VrcError> {
     let current_exe = std::env::current_exe()
         .into_report()
-        .change_context(VRCError::IOError)?;
+        .change_context(VrcError::Io)?;
 
     let current_dir = current_exe.parent();
     let Some(current_dir) = current_dir else {
-        bail!(VRCError::None);
+        bail!(VrcError::None);
     };
 
     let entries = current_dir
         .read_dir()
         .into_report()
-        .change_context(VRCError::IOError)
+        .change_context(VrcError::Io)
         .attach_printable(format!("Failed to read {}", current_dir.display()))?
         .filter_map(StdResult::ok);
 
@@ -39,7 +39,7 @@ pub fn load_plugins() -> Result<HashMap<String, (OSCMod_Ref, StateBox)>, VRCErro
         let plugin = abi_stable::library::lib_header_from_path(path.as_path())
             .and_then(|x| x.init_root_module::<OSCMod_Ref>())
             .into_report()
-            .change_context(VRCError::LibraryError)?;
+            .change_context(VrcError::Library)?;
 
         let new_fn = plugin.new();
         let state = new_fn();

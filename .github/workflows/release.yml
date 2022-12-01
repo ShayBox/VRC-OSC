@@ -9,40 +9,60 @@ jobs:
       SPOTIFY_CALLBACK: ${{ secrets.SPOTIFY_CALLBACK }}
       SPOTIFY_CLIENT: ${{ secrets.SPOTIFY_CLIENT }}
       SPOTIFY_SECRET: ${{ secrets.SPOTIFY_SECRET }}
+
     strategy:
+      fail-fast: false
       matrix:
         include:
-          - target: aarch64-apple-darwin
+          - name: Linux-x86_64
+            target: x86_64-unknown-linux-gnu
+            runner: ubuntu-latest
+            zip: vrc-osc,libdebug.so,libspotify.so
+
+          - name: macOS-Apple
+            target: aarch64-apple-darwin
             runner: macos-latest
             zip: vrc-osc,libdebug.dylib,libspotify.dylib
-          - target: aarch64-unknown-linux-gnu
-            runner: ubuntu-latest
-            zip: vrc-osc,libdebug.so,libspotify.so
-          - target: i686-pc-windows-msvc
-            runner: windows-latest
-            zip: vrc-osc.exe,debug.dll,spotify.dll
-          - target: i686-unknown-linux-gnu
-            runner: ubuntu-latest
-            zip: vrc-osc,libdebug.so,libspotify.so
-          - target: x86_64-apple-darwin
+
+          - name: macOS-Intel
+            target: x86_64-apple-darwin
             runner: macos-latest
             zip: vrc-osc,libdebug.dylib,libspotify.dylib
-          - target: x86_64-pc-windows-msvc
+
+          - name: Windows
+            target: i686-pc-windows-msvc
             runner: windows-latest
             zip: vrc-osc.exe,debug.dll,spotify.dll
-          - target: x86_64-unknown-linux-gnu
-            runner: ubuntu-latest
-            zip: vrc-osc,libdebug.so,libspotify.so
-    name: ${{ matrix.target }}
+
+    name: ${{ matrix.name }}
     runs-on: ${{ matrix.runner }}
     steps:
-      - uses: actions/checkout@v3
-      - run: rustup update stable
-      - run: rustup target add ${{ matrix.target }}
-      - run: cargo install cross
-      - run: cross build --release --target ${{ matrix.target }}
-      - run: zip -j ${{ matrix.target }}.zip target/${{ matrix.target }}/release/{${{ matrix.zip }}}
-        if: ${{ matrix.runner != 'windows-latest' }}
-      - run: bash -c '7z a ${{ matrix.target }}.zip ./target/${{ matrix.target }}/release/{${{ matrix.zip }}}'
+      - name: Fetch Repository
+        uses: actions/checkout@v3
+
+      - name: Update and Install Dependencies (Linux)
+        if: ${{ matrix.runner == 'ubuntu-latest' }}
+        run: |
+          sudo apt update
+          sudo apt upgrade -y
+          sudo apt install -y libssl-dev
+
+      - name: Update Rust Toolchain
+        run: rustup update stable
+
+      - name: Add Rust Target
+        run: rustup target add ${{ matrix.target }}
+
+      - name: Build Release Binary
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Create Zip Archive (Windows)
         if: ${{ matrix.runner == 'windows-latest' }}
-      - run: gh release upload ${{ github.ref_name }} ${{ matrix.target }}.zip --clobber
+        run: bash -c '7z a ${{ matrix.target }}.zip ./target/${{ matrix.target }}/release/{${{ matrix.zip }}}'
+
+      - name: Create Zip Archive (Other)
+        if: ${{ matrix.runner != 'windows-latest' }}
+        run: zip -j ${{ matrix.target }}.zip target/${{ matrix.target }}/release/{${{ matrix.zip }}}
+
+      - name: Upload Zip Archive
+        run: gh release upload ${{ github.ref_name }} ${{ matrix.target }}.zip --clobber

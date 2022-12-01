@@ -1,2 +1,0 @@
-[build.env]
-passthrough = ["SPOTIFY_CALLBACK", "SPOTIFY_CLIENT", "SPOTIFY_SECRET"]
