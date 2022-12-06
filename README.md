@@ -9,32 +9,33 @@
 
 # VRC-OSC
 
-Dynamically loaded cross-platform VRChat OSC plugins in Rust.
+Dynamically loaded cross-platform VRChat OSC plugins written in Rust.
 
-### Plugins:
-- [`plugin-debug`](/plugin-debug): Print all received packets, enable debug in `config.toml`.
+## Plugins:
+- [`plugin-debug`](/plugin-debug): Print all received osc packets to stdout.
 - [`plugin-spotify`](/plugin-spotify): Sends the currently playing track from Spotify to the chatbox.
 
-### Ideas
+## Planned:
 - [`plugin-controls`](/plugin-controls): Controls various system functions via avatar parameters.
 - [`plugin-lastfm`](/plugin-lastfm): Sends the currently playing track from LastFM to the chatbox.
 - [`plugin-librefm`](/plugin-librefm): Sends the currently playing track from LibreFM to the chatbox.
 
-I'd like to expand this project with a shared config and socket, and add more plugins.  
-If you want to help please feel free to join the [Discord](https://discord.shaybox.com)
-
-## Config:
-The configuration file is generated on first-run  
-Here's an example with comments
+## Configuration Documentation:
+This is the default configuration file generated at first-run with additional comments for documentation,  
+Do not include comments in your configuration file, overwriting a file with comments will cause corruption.  
 ```toml
 [debug]
-# Log all OSC messages from VRChat to stdout
+# This plugin will print all OSC messages and values to stdout for debugging.
 enable = false
 
 [osc]
-# Address to listen for OSC messages
+# Address to bind UdpSocket to listen for OSC messages.
+# This listens for messages on everything, you likely won't need to change this setting.
+# To receive messages from other devices than the local computer you will need to set a parameter.
+# https://docs.vrchat.com/docs/osc-overview#vrchat-ports
 bind_addr = "0.0.0.0:9001"
-# Address to send OSC messages
+# Address to send OSC messages to, default is your local computer.
+# You can set this to any device on your local network, such as a Quest.
 send_addr = "127.0.0.1:9000"
 
 # You must create a Spotify Developer Application

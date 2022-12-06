@@ -1,3 +1,5 @@
 # Debug Plugin
 
-Allows you to print all received packets to console, enable debug in `config.toml`.
+Print all received osc packets to stdout.
+
+**This plugin must be enabled in the toml configuration file.**

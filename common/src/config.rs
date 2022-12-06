@@ -7,29 +7,30 @@ use std::{
     path::PathBuf,
 };
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct VrcConfig {
     pub debug: DebugConfig,
     pub osc: OscConfig,
     pub spotify: SpotifyConfig,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct OscConfig {
     pub bind_addr: String,
     pub send_addr: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct DebugConfig {
     pub enable: bool,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct SpotifyConfig {
     pub client_id: String,
     pub client_secret: String,
     pub enable: bool,
+    pub format: String,
     pub pkce: bool,
     pub polling: u64,
     pub redirect_uri: String,
@@ -48,6 +49,7 @@ impl Default for VrcConfig {
             spotify: SpotifyConfig {
                 client_id: env!("SPOTIFY_CLIENT").into(),
                 client_secret: env!("SPOTIFY_SECRET").into(),
+                format: "📻 {song} - {artists}".into(),
                 enable: true,
                 pkce: false,
                 polling: 10,

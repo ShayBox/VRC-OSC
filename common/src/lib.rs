@@ -5,7 +5,7 @@ use abi_stable::{
     library::RootModule,
     package_version_strings,
     sabi_types::VersionStrings,
-    std_types::{RBox, RSliceMut},
+    std_types::{RBox, RString},
     StableAbi,
 };
 
@@ -13,19 +13,34 @@ pub mod config;
 pub mod error;
 
 #[abi_stable::sabi_trait]
-pub trait State: Debug {
+pub trait CommonState: Debug {
+    fn bind_addr(&self) -> RString;
     fn is_enabled(&self) -> bool;
 }
-pub type StateBox = State_TO<'static, RBox<()>>;
+
+#[derive(Clone, Debug)]
+pub struct OscState {
+    pub bind_addr: RString,
+    pub send_messages: bool,
+}
+
+impl CommonState for OscState {
+    fn bind_addr(&self) -> RString {
+        self.bind_addr.to_owned()
+    }
+
+    fn is_enabled(&self) -> bool {
+        self.send_messages
+    }
+}
+
+pub type StateBox = CommonState_TO<'static, RBox<()>>;
 
 #[repr(C)]
 #[derive(StableAbi)]
 #[sabi(kind(Prefix))]
 pub struct OSCMod {
     pub new: extern "C" fn() -> StateBox,
-
-    #[sabi(last_prefix_field)]
-    pub message: extern "C" fn(state: &StateBox, size: usize, buf: RSliceMut<u8>) -> (),
 }
 
 impl RootModule for OSCMod_Ref {

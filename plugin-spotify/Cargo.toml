@@ -1,6 +1,6 @@
 [package]
 name = "plugin-spotify"
-description = "Spotify dynamic plugin that sends the currently playing track to Chatbox"
+description = "Sends the currently playing track from Spotify to the chatbox"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true
@@ -18,9 +18,9 @@ crate-type = ["cdylib"]
 abi_stable.workspace = true
 common.workspace = true
 error-stack.workspace = true
-ferrispot = { version = "0.2.0", features = ["sync"] }
+ferrispot = { version = "0.3.3", features = ["sync"] }
 rosc.workspace = true
 terminal-link = "0.1.0"
 tiny_http = "0.12.0"
 url = "2.3.1"
-webbrowser = "0.8.0"
+webbrowser = "0.8.2"

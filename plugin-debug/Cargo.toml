@@ -1,6 +1,6 @@
 [package]
 name = "plugin-debug"
-description = "Prints all received packets to console"
+description = "Print all received osc packets to stdout"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true
@@ -15,9 +15,7 @@ name = "debug"
 crate-type = ["cdylib"]
 
 [dependencies]
-abi_stable = { workspace = true, default-features = false, features = [
-    "rust_latest_stable",
-] }
+abi_stable = { workspace = true, features = ["rust_latest_stable"] }
 common.workspace = true
 error-stack.workspace = true
 rosc.workspace = true

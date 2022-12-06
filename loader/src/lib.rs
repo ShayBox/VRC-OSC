@@ -41,7 +41,9 @@ pub fn load_plugins() -> Result<HashMap<String, (OSCMod_Ref, StateBox)>, VrcErro
             .into_report()
             .change_context(VrcError::Library)?;
 
-        let new_fn = plugin.new();
+        let Some(new_fn) = plugin.new() else {
+            continue;
+        };
         let state = new_fn();
 
         plugins.insert(file_name.into(), (plugin, state));
