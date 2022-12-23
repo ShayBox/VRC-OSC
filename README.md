@@ -46,8 +46,10 @@ send_addr = "127.0.0.1:9000"
 client_id = ""
 # Spotify Client Secret (Non-PKCE)
 client_secret = ""
-# Enable Spotify Plugin
-enable = true
+# Enable Spotify Currently Playing Chatbox
+enable_chatbox = true
+# Enable Spotify Media Control (Avatar Parameters)
+enable_control = true
 # Use Spotify PKCE authentication
 # PKCE is the appropriate authentication method for a desktop program
 # But it asks for in-browser oauth approval for already approved apps

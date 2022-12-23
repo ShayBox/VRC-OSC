@@ -43,9 +43,8 @@ jobs:
       - name: Update and Install Dependencies (Linux)
         if: ${{ matrix.runner == 'ubuntu-latest' }}
         run: |
-          sudo apt update
-          sudo apt upgrade -y
-          sudo apt install -y libssl-dev
+          sudo apt-get update
+          sudo apt-get install -y libssl-dev
 
       - name: Update Rust Toolchain
         run: rustup update stable

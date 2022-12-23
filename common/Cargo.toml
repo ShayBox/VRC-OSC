@@ -12,6 +12,6 @@ license.workspace = true
 
 [dependencies]
 abi_stable = { workspace = true, features = ["rust_latest_stable"] }
-error-stack.workspace = true
+anyhow.workspace = true
 serde = { version = "1.0.149", features = ["derive"] }
 toml = "0.5.9"

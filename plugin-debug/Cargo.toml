@@ -16,6 +16,6 @@ crate-type = ["cdylib"]
 
 [dependencies]
 abi_stable = { workspace = true, features = ["rust_latest_stable"] }
+anyhow.workspace = true
 common.workspace = true
-error-stack.workspace = true
 rosc.workspace = true

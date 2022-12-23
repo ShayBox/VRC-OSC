@@ -10,7 +10,6 @@ use abi_stable::{
 };
 
 pub mod config;
-pub mod error;
 
 #[abi_stable::sabi_trait]
 pub trait CommonState: Debug {
