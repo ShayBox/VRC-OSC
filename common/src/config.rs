@@ -1,10 +1,11 @@
-use anyhow::Result;
-use serde::{Deserialize, Serialize};
 use std::{
     fs::OpenOptions,
     io::{Read, Seek, SeekFrom, Write},
     path::PathBuf,
 };
+
+use anyhow::Result;
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct VrcConfig {

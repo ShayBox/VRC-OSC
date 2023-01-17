@@ -1,24 +1,32 @@
+use std::{net::UdpSocket, thread::Builder, time::Duration};
+
 use abi_stable::{
-    export_root_module, prefix_type::PrefixTypeTrait, sabi_extern_fn, sabi_trait::TD_Opaque,
+    export_root_module,
+    prefix_type::PrefixTypeTrait,
+    sabi_extern_fn,
+    sabi_trait::TD_Opaque,
 };
 use anyhow::{bail, Result};
 use common::{config::VrcConfig, CommonState_TO, OSCMod, OSCMod_Ref, OscState, StateBox};
 use ferrispot::{
     client::{
         authorization_code::{
-            SyncAuthorizationCodeUserClient, SyncIncompleteAuthorizationCodeUserClient,
+            SyncAuthorizationCodeUserClient,
+            SyncIncompleteAuthorizationCodeUserClient,
         },
         SpotifyClientBuilder,
     },
     model::playback::{PlayingType, RepeatState},
     prelude::{
-        AccessTokenRefreshSync, CommonArtistInformation, CommonTrackInformation, ScopedClient,
+        AccessTokenRefreshSync,
+        CommonArtistInformation,
+        CommonTrackInformation,
+        ScopedClient,
         SyncRequestBuilder,
     },
     scope::Scope,
 };
 use rosc::{OscMessage, OscPacket, OscType};
-use std::{net::UdpSocket, thread::Builder, time::Duration};
 use terminal_link::Link;
 use tiny_http::{Header, Response, Server};
 use url::Url;

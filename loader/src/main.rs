@@ -1,6 +1,7 @@
+use std::net::UdpSocket;
+
 use anyhow::Result;
 use common::config::VrcConfig;
-use std::net::UdpSocket;
 
 fn main() -> Result<()> {
     let config = VrcConfig::load()?;

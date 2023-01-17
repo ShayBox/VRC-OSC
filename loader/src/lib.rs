@@ -1,6 +1,7 @@
+use std::{collections::HashMap, ffi::OsStr, result::Result as StdResult};
+
 use anyhow::{bail, Result};
 use common::{OSCMod_Ref, StateBox};
-use std::{collections::HashMap, ffi::OsStr, result::Result as StdResult};
 
 pub fn load_plugins() -> Result<HashMap<String, (OSCMod_Ref, StateBox)>> {
     let current_exe = std::env::current_exe()?;

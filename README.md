@@ -12,20 +12,20 @@
 Dynamically loaded cross-platform VRChat OSC plugins written in Rust.
 
 ## Plugins:
-- [`plugin-debug`](/plugin-debug): Print all received osc packets to stdout.
-- [`plugin-spotify`](/plugin-spotify): Sends the currently playing track from Spotify to the chatbox.
+- [`plugin-debug`](/plugin-debug): Log all received OSC packets to stdout for debugging.
+- [`plugin-spotify`](/plugin-spotify): Displays the currently playing song and controls media playback via avatar parameters.
 
 ## Planned:
-- [`plugin-controls`](/plugin-controls): Controls various system functions via avatar parameters.
-- [`plugin-lastfm`](/plugin-lastfm): Sends the currently playing track from LastFM to the chatbox.
-- [`plugin-librefm`](/plugin-librefm): Sends the currently playing track from LibreFM to the chatbox.
+- [`plugin-controls`](/plugin-controls): Controls system media playback via avatar parameters.
+- [`plugin-lastfm`](/plugin-lastfm): Displays the currently playing LastFM song.
+- [`plugin-librefm`](/plugin-librefm): Displays the currently playing LibreFM song.
 
 ## Configuration Documentation:
 This is the default configuration file generated at first-run with additional comments for documentation,  
 Do not include comments in your configuration file, overwriting a file with comments will cause corruption.  
 ```toml
 [debug]
-# This plugin will print all OSC messages and values to stdout for debugging.
+# This plugin will log all received OSC packets to stdout for debugging.
 enable = false
 
 [osc]

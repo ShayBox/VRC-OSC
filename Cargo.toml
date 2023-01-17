@@ -10,7 +10,7 @@ repository = "https://github.com/ShayBox/VRC-OSC"
 license = "MIT"
 
 [workspace.dependencies]
-abi_stable = { version = "0.11", features = ["rust_latest_stable"] }
+abi_stable = { version = "0.11.1", features = ["rust_latest_stable"] }
 anyhow = "1.0.68"
 common = { path = "common" }
 rosc = "0.9.1"

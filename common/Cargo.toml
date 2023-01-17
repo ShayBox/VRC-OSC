@@ -13,5 +13,5 @@ license.workspace = true
 [dependencies]
 abi_stable = { workspace = true, features = ["rust_latest_stable"] }
 anyhow.workspace = true
-serde = { version = "1.0.149", features = ["derive"] }
-toml = "0.5.9"
+serde = { version = "1.0.152", features = ["derive"] }
+toml = "0.5.10"

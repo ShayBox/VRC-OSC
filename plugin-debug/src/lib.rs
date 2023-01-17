@@ -1,10 +1,14 @@
+use std::{net::UdpSocket, thread::Builder};
+
 use abi_stable::{
-    export_root_module, prefix_type::PrefixTypeTrait, sabi_extern_fn, sabi_trait::TD_Opaque,
+    export_root_module,
+    prefix_type::PrefixTypeTrait,
+    sabi_extern_fn,
+    sabi_trait::TD_Opaque,
 };
 use anyhow::Result;
 use common::{config::VrcConfig, CommonState_TO, OSCMod, OSCMod_Ref, OscState, StateBox};
 use rosc::OscPacket;
-use std::{net::UdpSocket, thread::Builder};
 
 #[export_root_module]
 fn instantiate_root_module() -> OSCMod_Ref {
