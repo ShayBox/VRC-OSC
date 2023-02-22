@@ -79,7 +79,7 @@ impl VrcConfig {
             .read(true)
             .write(true)
             .create(true)
-            .open(&config_path)?;
+            .open(config_path)?;
 
         let mut content = String::new();
         file.read_to_string(&mut content)?;
@@ -101,10 +101,10 @@ impl VrcConfig {
     pub fn save(&mut self) -> Result<()> {
         let config_path = Self::get_path()?;
         let mut file = OpenOptions::new()
-            .read(true)
             .write(true)
             .create(true)
-            .open(&config_path)?;
+            .truncate(true)
+            .open(config_path)?;
 
         let text = toml::to_string(&self)?;
         file.write_all(text.as_bytes())?;
