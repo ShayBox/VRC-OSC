@@ -1,5 +1,7 @@
 #![allow(repr_transparent_external_private_fields)]
 
+use std::fmt::Debug;
+
 use abi_stable::{
     declare_root_module_statics,
     library::RootModule,

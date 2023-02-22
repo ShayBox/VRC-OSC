@@ -9,6 +9,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct VrcConfig {
+    pub clock: ClockConfig,
     pub debug: DebugConfig,
     pub osc: OscConfig,
     pub spotify: SpotifyConfig,
@@ -18,6 +19,14 @@ pub struct VrcConfig {
 pub struct OscConfig {
     pub bind_addr: String,
     pub send_addr: String,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct ClockConfig {
+    pub enable: bool,
+    pub mode: bool,
+    pub smooth: bool,
+    pub polling: u64,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -45,6 +54,12 @@ impl Default for VrcConfig {
             osc: OscConfig {
                 bind_addr: "0.0.0.0:9001".into(),
                 send_addr: "127.0.0.1:9000".into(),
+            },
+            clock: ClockConfig {
+                enable: true,
+                mode: false,
+                smooth: false,
+                polling: 1000,
             },
             debug: DebugConfig { enable: false },
             spotify: SpotifyConfig {

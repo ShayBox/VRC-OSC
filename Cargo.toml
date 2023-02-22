@@ -1,5 +1,5 @@
 [workspace]
-members = ["common", "loader", "plugin-debug", "plugin-spotify"]
+members = ["common", "loader", "plugin-clock", "plugin-debug", "plugin-spotify"]
 
 [workspace.package]
 version = "1.4.0"

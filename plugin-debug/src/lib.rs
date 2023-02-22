@@ -17,9 +17,9 @@ fn instantiate_root_module() -> OSCMod_Ref {
 
 #[sabi_extern_fn]
 pub fn new() -> StateBox {
-    let config = VrcConfig::load().unwrap();
-    let osc = UdpSocket::bind("127.0.0.1:0").unwrap();
-    let local_addr = osc.local_addr().unwrap();
+    let config = VrcConfig::load().expect("Failed to load config");
+    let osc = UdpSocket::bind("127.0.0.1:0").expect("Failed to bind socket");
+    let local_addr = osc.local_addr().expect("Failed to parse local_addr");
 
     let state = OscState {
         bind_addr: local_addr.to_string().into(),
