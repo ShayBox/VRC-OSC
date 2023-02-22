@@ -131,17 +131,19 @@ fn thread_chatbox(
     loop {
         std::thread::sleep(Duration::from_secs(config.spotify.polling));
 
-        let Some(track) = spotify.currently_playing_item().send_sync()? else {
+        let Ok(track) = spotify.currently_playing_item().send_sync() else {
             continue;
         };
 
-        let Some(item) = track.public_playing_item()
-        else {
+        let Some(track) = track else {
             continue;
         };
 
-        let PlayingType::Track(full_track) = item.item()
-        else {
+        let Some(item) = track.public_playing_item() else {
+            continue;
+        };
+
+        let PlayingType::Track(full_track) = item.item() else {
             continue;
         };
 
@@ -171,12 +173,12 @@ fn thread_chatbox(
             continue;
         }
 
-        let message = OscPacket::Message(OscMessage {
+        let packet = OscPacket::Message(OscMessage {
             addr: "/chatbox/input".into(),
             args: vec![OscType::String(text.into()), OscType::Bool(true)],
         });
 
-        let msg_buf = rosc::encoder::encode(&message)?;
+        let msg_buf = rosc::encoder::encode(&packet)?;
         osc.send_to(&msg_buf, &config.osc.send_addr)?;
     }
 }
@@ -187,11 +189,8 @@ fn thread_control(
     spotify: &SyncAuthorizationCodeUserClient,
 ) -> Result<()> {
     let mut buf = [0u8; rosc::decoder::MTU];
-    let Some(playback_state) = spotify.playback_state().send_sync()? else {
-        bail!("Could not get PlaybackState");
-    };
 
-    let mut previous_volume = playback_state.device().volume_percent();
+    let mut previous_volume = None;
     loop {
         let (size, _addr) = osc.recv_from(&mut buf).unwrap();
         let (_buf, packet) = rosc::decoder::decode_udp(&buf[..size]).unwrap();
@@ -203,6 +202,14 @@ fn thread_control(
         let Some(arg) = packet.args.first() else {
             continue;
         };
+
+        let Some(playback_state) = spotify.playback_state().send_sync()? else {
+            continue;
+        };
+
+        if previous_volume.is_none() {
+            previous_volume = Some(playback_state.device().volume_percent());
+        }
 
         let request = match addr.as_ref() {
             "Play" => spotify.pause(),
@@ -218,10 +225,10 @@ fn thread_control(
             "Muted" => {
                 if let OscType::Bool(mute) = arg.to_owned() {
                     if mute {
-                        previous_volume = playback_state.device().volume_percent();
+                        previous_volume = Some(playback_state.device().volume_percent());
                         spotify.volume(0)
                     } else {
-                        spotify.volume(previous_volume)
+                        spotify.volume(previous_volume.expect("Failed to get previous volume"))
                     }
                 } else {
                     continue;
