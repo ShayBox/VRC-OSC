@@ -17,22 +17,22 @@ jobs:
           - name: Linux-x86_64
             target: x86_64-unknown-linux-gnu
             runner: ubuntu-latest
-            zip: vrc-osc,libdebug.so,libspotify.so
+            zip: vrc-osc,libclock.so,libdebug.so,libspotify.so
 
           - name: macOS-Apple
             target: aarch64-apple-darwin
             runner: macos-latest
-            zip: vrc-osc,libdebug.dylib,libspotify.dylib
+            zip: vrc-osc,libclock.dylib,libdebug.dylib,libspotify.dylib
 
           - name: macOS-Intel
             target: x86_64-apple-darwin
             runner: macos-latest
-            zip: vrc-osc,libdebug.dylib,libspotify.dylib
+            zip: vrc-osc,libclock.dylib,libdebug.dylib,libspotify.dylib
 
           - name: Windows
             target: i686-pc-windows-msvc
             runner: windows-latest
-            zip: vrc-osc.exe,debug.dll,spotify.dll
+            zip: vrc-osc.exe,clock.dll,debug.dll,spotify.dll
 
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.runner }}
