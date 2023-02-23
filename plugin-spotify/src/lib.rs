@@ -47,6 +47,11 @@ pub fn new() -> StateBox {
         send_messages: config.spotify.enable_control,
     };
 
+    if !config.spotify.enable_chatbox && !config.spotify.enable_control {
+        println!("Spotify is disabled");
+        return CommonState_TO::from_value(state, TD_Opaque);
+    }
+
     let user_client = if config.spotify.pkce {
         let spotify_client = SpotifyClientBuilder::new(&config.spotify.client_id).build_sync();
         let result = spotify_client

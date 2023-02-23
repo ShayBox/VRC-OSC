@@ -1,27 +1,28 @@
 use std::{
     fs::OpenOptions,
-    io::{Read, Seek, SeekFrom, Write},
+    io::{Read, Seek, Write},
     path::PathBuf,
 };
 
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct VrcConfig {
     pub clock: ClockConfig,
     pub debug: DebugConfig,
     pub osc: OscConfig,
     pub spotify: SpotifyConfig,
+    pub steamvr: SteamVRConfig,
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct OscConfig {
     pub bind_addr: String,
     pub send_addr: String,
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ClockConfig {
     pub enable: bool,
     pub mode: bool,
@@ -29,12 +30,12 @@ pub struct ClockConfig {
     pub polling: u64,
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct DebugConfig {
     pub enable: bool,
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct SpotifyConfig {
     pub client_id: String,
     pub client_secret: String,
@@ -48,32 +49,54 @@ pub struct SpotifyConfig {
     pub send_once: bool,
 }
 
-impl Default for VrcConfig {
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct SteamVRConfig {
+    pub enable: bool,
+    pub register: bool,
+}
+
+impl Default for OscConfig {
     fn default() -> Self {
-        VrcConfig {
-            osc: OscConfig {
-                bind_addr: "0.0.0.0:9001".into(),
-                send_addr: "127.0.0.1:9000".into(),
-            },
-            clock: ClockConfig {
-                enable: true,
-                mode: false,
-                smooth: false,
-                polling: 1000,
-            },
-            debug: DebugConfig { enable: false },
-            spotify: SpotifyConfig {
-                client_id: env!("SPOTIFY_CLIENT").into(),
-                client_secret: env!("SPOTIFY_SECRET").into(),
-                format: "📻 {song} - {artists}".into(),
-                enable_chatbox: true,
-                enable_control: true,
-                pkce: false,
-                polling: 10,
-                redirect_uri: env!("SPOTIFY_CALLBACK").into(),
-                refresh_token: "".into(),
-                send_once: false,
-            },
+        Self {
+            bind_addr: "0.0.0.0:9001".into(),
+            send_addr: "127.0.0.1:9000".into(),
+        }
+    }
+}
+
+impl Default for ClockConfig {
+    fn default() -> Self {
+        Self {
+            enable: false,
+            mode: false,
+            smooth: false,
+            polling: 1000,
+        }
+    }
+}
+
+impl Default for SpotifyConfig {
+    fn default() -> Self {
+        Self {
+            client_id: env!("SPOTIFY_CLIENT").into(),
+            client_secret: env!("SPOTIFY_SECRET").into(),
+            format: "📻 {song} - {artists}".into(),
+            enable_chatbox: false,
+            enable_control: false,
+            pkce: false,
+            polling: 10,
+            redirect_uri: env!("SPOTIFY_CALLBACK").into(),
+            refresh_token: "".into(),
+            send_once: false,
+        }
+    }
+}
+
+impl Default for SteamVRConfig {
+    fn default() -> Self {
+        Self {
+            enable: false,
+            register: true,
         }
     }
 }
@@ -105,7 +128,7 @@ impl VrcConfig {
                 let config = VrcConfig::default();
                 let text = toml::to_string(&config)?;
 
-                file.seek(SeekFrom::Start(0))?;
+                file.rewind()?;
                 file.write_all(text.as_bytes())?;
 
                 Ok(config)

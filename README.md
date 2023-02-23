@@ -13,10 +13,10 @@ Dynamically loaded cross-platform VRChat OSC plugins written in Rust.
 
 ## Plugins:
 
-- [`plugin-time`](/plugin-clock): Sends the time via avatar parameters for watch prefabs.
+- [`plugin-clock`](/plugin-clock): Sends the time via avatar parameters for watch prefabs.
 - [`plugin-debug`](/plugin-debug): Log all received OSC packets to stdout for debugging.
 - [`plugin-spotify`](/plugin-spotify): Displays the currently playing song and controls media playback via avatar
-  parameters.
+- [`plugin-steamvr`](/plugin-steamvr): Registers VRC-OSC as a SteamVR addon for auto-start/stop.
 
 ## Planned:
 
@@ -34,7 +34,7 @@ You may copy this as a default configuration, but comments will be wiped on firs
 
 # The Clock plugin sends the time via avatar parameters for watch prefabs.
 [clock]
-enable = true
+enable = false
 # Enable 24 hour mode. (12 = false | 24 = true)
 mode = false
 # Smooth results using milliseconds, smoother animations.
@@ -48,8 +48,7 @@ polling = 1000
 [debug]
 enable = false
 
-# The built-in plugin loader handles starting every plugin and relaying incoming OSC packets.
-# Every plugin is responsible for sending outgoing OSC packets to the provided address.
+# The built-in plugin loader handles starting every plugin and relaying OSC packets.
 # If you're running this on the same computer as VRChat, you won't need to change this.
 # If you're using a different PC or Quest you can change the addresses below.
 # To receive incoming OSC packets you will need to set the launch option below.
@@ -65,9 +64,9 @@ send_addr = "127.0.0.1:9000"
 client_id = ""
 client_secret = ""
 # Displays the currently playing song via in-game chatbox.
-enable_chatbox = true
+enable_chatbox = false
 # Controls media playback via avatar parameters.
-enable_control = true
+enable_control = false
 # Use Spotify PKCE authentication
 # PKCE is the appropriate authentication method for a desktop program
 # But it asks for in-browser oauth approval for already approved apps
@@ -82,4 +81,10 @@ redirect_uri = "http://127.0.0.1:2345"
 refresh_token = ""
 # When enabled, only sends the currently playing song to in-game chatbox once per song.
 send_once = false
+
+[steamvr]
+# Enabling this will register VRC-OSC as a SteamVR addon for auto-start.
+enable = false
+# To un-register set 'register' to false and 'enable' to true.
+register = true
 ```

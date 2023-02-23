@@ -1,6 +1,6 @@
 on:
   release:
-    types: [created]
+    types: [ created ]
 
 jobs:
   release:
@@ -17,7 +17,7 @@ jobs:
           - name: Linux-x86_64
             target: x86_64-unknown-linux-gnu
             runner: ubuntu-latest
-            zip: vrc-osc,libclock.so,libdebug.so,libspotify.so
+            zip: vrc-osc,libclock.so,libdebug.so,libspotify.so,libsteamvr.so
 
           - name: macOS-Apple
             target: aarch64-apple-darwin
@@ -30,9 +30,9 @@ jobs:
             zip: vrc-osc,libclock.dylib,libdebug.dylib,libspotify.dylib
 
           - name: Windows
-            target: i686-pc-windows-msvc
+            target: x86_64-pc-windows-msvc
             runner: windows-latest
-            zip: vrc-osc.exe,clock.dll,debug.dll,spotify.dll
+            zip: vrc-osc.exe,clock.dll,debug.dll,spotify.dll,steamvr.dll
 
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.runner }}
@@ -52,7 +52,12 @@ jobs:
       - name: Add Rust Target
         run: rustup target add ${{ matrix.target }}
 
-      - name: Build Release Binary
+      - name: Build Release Binary (macOS)
+        if: ${{ matrix.runner == 'macos-latest' }}
+        run: cargo build --release --target ${{ matrix.target }} --workspace --exclude plugin-steamvr
+
+      - name: Build Release Binary (Other)
+        if: ${{ matrix.runner != 'macos-latest' }}
         run: cargo build --release --target ${{ matrix.target }}
 
       - name: Create Zip Archive (Windows)

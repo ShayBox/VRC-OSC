@@ -1,0 +1,24 @@
+[package]
+name = "plugin-steamvr"
+description = "Registers VRC-OSC as a SteamVR addon for auto-start/stop"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+readme.workspace = true
+repository.workspace = true
+license.workspace = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "steamvr"
+crate-type = ["cdylib"]
+
+[dependencies]
+abi_stable.workspace = true
+anyhow.workspace = true
+common.workspace = true
+ovr_overlay = { git = "https://github.com/Shays-Forks/ovr_overlay.git", features = ["ovr_applications"] }
+rosc.workspace = true
+serde = { workspace = true, features = ["derive"] }
+serde_json = "1.0.93"

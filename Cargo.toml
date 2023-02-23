@@ -1,8 +1,8 @@
 [workspace]
-members = ["common", "loader", "plugin-clock", "plugin-debug", "plugin-spotify"]
+members = ["common", "loader", "plugin-clock", "plugin-debug", "plugin-spotify", "plugin-steamvr"]
 
 [workspace.package]
-version = "1.5.0"
+version = "1.6.0"
 authors = ["Shayne Hartford <shaybox@shaybox.com>"]
 edition = "2021"
 readme = "README.md"
@@ -14,6 +14,7 @@ abi_stable = { version = "0.11.1", features = ["rust_latest_stable"] }
 anyhow = "1.0.68"
 common = { path = "common" }
 rosc = "0.9.1"
+serde = "1.0.152"
 
 [profile.release]
 strip = true
