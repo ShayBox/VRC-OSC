@@ -7,96 +7,87 @@ use std::{
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct VrcConfig {
-    pub clock: ClockConfig,
-    pub debug: DebugConfig,
-    pub osc: OscConfig,
-    pub spotify: SpotifyConfig,
-    pub steamvr: SteamVRConfig,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct OscConfig {
-    pub bind_addr: String,
-    pub send_addr: String,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct ClockConfig {
-    pub enable: bool,
-    pub mode: bool,
-    pub smooth: bool,
-    pub polling: u64,
-}
-
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct DebugConfig {
-    pub enable: bool,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct SpotifyConfig {
-    pub client_id: String,
-    pub client_secret: String,
-    pub enable_chatbox: bool,
-    pub enable_control: bool,
-    pub format: String,
-    pub pkce: bool,
-    pub polling: u64,
-    pub redirect_uri: String,
-    pub refresh_token: String,
-    pub send_once: bool,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct SteamVRConfig {
-    pub enable: bool,
-    pub register: bool,
-}
-
-impl Default for OscConfig {
-    fn default() -> Self {
-        Self {
-            bind_addr: "0.0.0.0:9001".into(),
-            send_addr: "127.0.0.1:9000".into(),
-        }
+structstruck::strike! {
+    #[strikethrough[derive(Debug, Clone, Serialize, Deserialize)]]
+    pub struct VrcConfig {
+        pub osc: struct {
+            pub bind_addr: String,
+            pub send_addr: String,
+        },
+        pub clock: struct {
+            pub enable: bool,
+            pub mode: bool,
+            pub smooth: bool,
+            pub polling: u64,
+        },
+        pub debug: struct {
+            pub enable: bool,
+        },
+        pub lastfm: struct {
+            pub api_key: String,
+            pub username: String,
+            pub format: String,
+            pub enable: bool,
+            pub send_once: bool,
+            pub polling: u64,
+        },
+        pub spotify: struct {
+            pub client_id: String,
+            pub client_secret: String,
+            pub redirect_uri: String,
+            pub format: String,
+            pub refresh_token: String,
+            pub enable_chatbox: bool,
+            pub enable_control: bool,
+            pub pkce: bool,
+            pub send_once: bool,
+            pub polling: u64,
+        },
+        pub steamvr: struct {
+            pub enable: bool,
+            pub register: bool,
+        },
     }
 }
 
-impl Default for ClockConfig {
+impl Default for VrcConfig {
     fn default() -> Self {
         Self {
-            enable: false,
-            mode: false,
-            smooth: false,
-            polling: 1000,
-        }
-    }
-}
-
-impl Default for SpotifyConfig {
-    fn default() -> Self {
-        Self {
-            client_id: env!("SPOTIFY_CLIENT").into(),
-            client_secret: env!("SPOTIFY_SECRET").into(),
-            format: "📻 {song} - {artists}".into(),
-            enable_chatbox: false,
-            enable_control: false,
-            pkce: false,
-            polling: 10,
-            redirect_uri: env!("SPOTIFY_CALLBACK").into(),
-            refresh_token: "".into(),
-            send_once: false,
-        }
-    }
-}
-
-impl Default for SteamVRConfig {
-    fn default() -> Self {
-        Self {
-            enable: false,
-            register: true,
+            osc: Osc {
+                bind_addr: "0.0.0.0:9001".into(),
+                send_addr: "127.0.0.1:9000".into(),
+            },
+            clock: Clock {
+                enable: false,
+                mode: false,
+                smooth: false,
+                polling: 1000,
+            },
+            debug: Debug { enable: false },
+            lastfm: Lastfm {
+                api_key: env!("LASTFM_API_KEY").into(),
+                username: env!("LASTFM_USERNAME").into(),
+                format: "📻 {song} - {artists}".into(),
+                enable: false,
+                send_once: false,
+                polling: 10,
+            },
+            spotify: Spotify {
+                client_id: env!("SPOTIFY_CLIENT").into(),
+                client_secret: env!("SPOTIFY_SECRET").into(),
+                redirect_uri: env!("SPOTIFY_CALLBACK").into(),
+                format: "📻 {song} - {artists}".into(),
+                refresh_token: "".into(),
+                enable_chatbox: false,
+                enable_control: false,
+                pkce: false,
+                send_once: false,
+                polling: 10,
+            },
+            steamvr: Steamvr {
+                enable: false,
+                register: true,
+            },
         }
     }
 }

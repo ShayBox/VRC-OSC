@@ -1,6 +1,6 @@
 [package]
 name = "plugin-spotify"
-description = "Displays the currently playing song and controls media playback via avatar parameters"
+description = "Displays the currently playing song via chatbox, and controls playback via avatar parameters"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true

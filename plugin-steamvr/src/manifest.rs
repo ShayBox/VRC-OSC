@@ -7,50 +7,40 @@ use std::{
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct Manifest {
-    pub source: String,
-    pub applications: Vec<Application>,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct Application {
-    pub app_key: String,
-    pub launch_type: String,
-    pub binary_path_windows: String,
-    pub is_dashboard_overlay: bool,
-    pub strings: HashMap<String, LocaleString>,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct LocaleString {
-    pub name: String,
-    pub description: String,
+structstruck::strike! {
+    #[strikethrough[derive(Debug, Serialize, Deserialize)]]
+    pub struct Manifest {
+        pub source: String,
+        pub applications: Vec<pub struct {
+            pub app_key: String,
+            pub launch_type: String,
+            pub binary_path_windows: String,
+            pub is_dashboard_overlay: bool,
+            pub strings: HashMap<String, pub struct {
+                pub name: String,
+                pub description: String,
+            }>,
+        }>,
+    }
 }
 
 impl Default for Manifest {
     fn default() -> Self {
         Self {
             source: "builtin".into(),
-            applications: vec![Application::default()],
-        }
-    }
-}
-
-impl Default for Application {
-    fn default() -> Self {
-        Self {
-            app_key: "com.shaybox.vrc-osc".into(),
-            launch_type: "binary".into(),
-            binary_path_windows: "vrc-osc.exe".into(),
-            is_dashboard_overlay: true,
-            strings: HashMap::from([(
-                "en_us".into(),
-                LocaleString {
-                    name: "VRC-OSC".into(),
-                    description: "VRChat OSC Overlay".into(),
-                },
-            )]),
+            applications: vec![Applications {
+                app_key: "com.shaybox.vrc-osc".into(),
+                launch_type: "binary".into(),
+                binary_path_windows: "vrc-osc.exe".into(),
+                is_dashboard_overlay: true,
+                strings: HashMap::from([(
+                    "en_us".into(),
+                    Strings {
+                        name: "VRC-OSC".into(),
+                        description: "VRChat OSC Overlay".into(),
+                    },
+                )]),
+            }],
         }
     }
 }

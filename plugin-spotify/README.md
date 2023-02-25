@@ -1,6 +1,6 @@
 # Spotify Plugin
 
-Displays the currently playing song and controls media playback via avatar parameters.
+Displays the currently playing song via chatbox, and controls playback via avatar parameters.
 
 ## Media Playback Display
 
@@ -38,7 +38,7 @@ This unfortunately requires **Spotify Premium**, see [Avatar Parameters](#avatar
 ## Avatar Parameters
 
 This plugin uses the [VRCOSC Media Prefab](https://github.com/VolcanicArts/VRCOSC/releases/latest)  
-Support for additional prefabs are welcome  
+Support for additional prefabs are welcome
 
 | Parameter             | Type  |
 |-----------------------|-------|

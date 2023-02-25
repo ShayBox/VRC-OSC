@@ -1,8 +1,8 @@
 [workspace]
-members = ["common", "loader", "plugin-clock", "plugin-debug", "plugin-spotify", "plugin-steamvr"]
+members = ["common", "loader", "plugin-clock", "plugin-debug", "plugin-lastfm", "plugin-spotify", "plugin-steamvr"]
 
 [workspace.package]
-version = "1.6.0"
+version = "1.7.0"
 authors = ["Shayne Hartford <shaybox@shaybox.com>"]
 edition = "2021"
 readme = "README.md"
@@ -15,6 +15,7 @@ anyhow = "1.0.68"
 common = { path = "common" }
 rosc = "0.9.1"
 serde = "1.0.152"
+structstruck = "0.4.0"
 
 [profile.release]
 strip = true

@@ -5,6 +5,12 @@ use common::config::VrcConfig;
 
 fn main() -> Result<()> {
     let config = VrcConfig::load()?;
+
+    if config.lastfm.enable && config.spotify.enable_chatbox {
+        println!("You cannot enable LastFM and Spotify Chatbox at the same time.");
+        return Ok(());
+    }
+
     let osc = UdpSocket::bind(&config.osc.bind_addr)?;
     let plugins = vrc_osc::load_plugins()?;
 
