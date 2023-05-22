@@ -18,9 +18,9 @@ crate-type = ["cdylib"]
 abi_stable.workspace = true
 anyhow.workspace = true
 common.workspace = true
-ferrispot = { version = "0.4.0", features = ["sync"] }
+ferrispot = { version = "0.4", features = ["sync"] }
 rosc.workspace = true
-terminal-link = "0.1.0"
-tiny_http = "0.12.0"
-url = "2.3.1"
-webbrowser = "0.8.4"
+terminal-link = "0.1"
+tiny_http = "0.12"
+url = "2.3"
+webbrowser = "0.8"

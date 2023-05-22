@@ -15,4 +15,4 @@ abi_stable = { workspace = true, features = ["rust_latest_stable"] }
 anyhow.workspace = true
 serde = { workspace = true, features = ["derive"] }
 structstruck.workspace = true
-toml = "0.7.2"
+toml = "0.7"

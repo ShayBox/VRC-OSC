@@ -18,9 +18,13 @@ crate-type = ["cdylib"]
 abi_stable.workspace = true
 anyhow.workspace = true
 common.workspace = true
-reqwest = { version = "0.11.14", default-features = false, features = ["rustls-tls", "blocking", "json"] }
+reqwest = { version = "0.11", default-features = false, features = [
+    "rustls-tls",
+    "blocking",
+    "json",
+] }
 rosc.workspace = true
 serde = { workspace = true, features = ["derive"] }
-serde-this-or-that = "0.4.2"
+serde-this-or-that = "0.4"
 structstruck.workspace = true
-terminal-link = "0.1.0"
+terminal-link = "0.1"

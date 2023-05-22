@@ -1,5 +1,13 @@
 [workspace]
-members = ["common", "loader", "plugin-clock", "plugin-debug", "plugin-lastfm", "plugin-spotify", "plugin-steamvr"]
+members = [
+    "common",
+    "loader",
+    "plugin-clock",
+    "plugin-debug",
+    "plugin-lastfm",
+    "plugin-spotify",
+    "plugin-steamvr",
+]
 
 [workspace.package]
 version = "1.7.0"
@@ -10,12 +18,12 @@ repository = "https://github.com/ShayBox/VRC-OSC"
 license = "MIT"
 
 [workspace.dependencies]
-abi_stable = { version = "0.11.1", features = ["rust_latest_stable"] }
-anyhow = "1.0.68"
+abi_stable = { version = "0.11", features = ["rust_latest_stable"] }
+anyhow = "1.0"
 common = { path = "common" }
-rosc = "0.9.1"
-serde = "1.0.152"
-structstruck = "0.4.0"
+rosc = "0.10"
+serde = "1.0"
+structstruck = "0.4"
 
 [profile.release]
 strip = true

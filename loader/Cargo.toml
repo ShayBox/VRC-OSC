@@ -17,4 +17,4 @@ common.workspace = true
 rosc.workspace = true
 
 [build-dependencies]
-winres = "0.1.12"
+winres = "0.1"
