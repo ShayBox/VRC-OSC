@@ -5,6 +5,7 @@ use std::{
 };
 
 use anyhow::Result;
+use dialoguer::{Confirm, Input};
 use serde::{Deserialize, Serialize};
 
 structstruck::strike! {
@@ -52,7 +53,7 @@ structstruck::strike! {
 
 impl Default for VrcConfig {
     fn default() -> Self {
-        Self {
+        let mut config = Self {
             osc: Osc {
                 bind_addr: "0.0.0.0:9001".into(),
                 send_addr: "127.0.0.1:9000".into(),
@@ -88,6 +89,46 @@ impl Default for VrcConfig {
                 enable: false,
                 register: true,
             },
+        };
+
+        let prompt = "Would you like to use the setup wizard? You can manually edit the config.toml file later.";
+        if Confirm::new().with_prompt(prompt).interact().unwrap() {
+            // SteamVR
+            let prompt = "Would you like VRC-OSC to auto-start with SteamVR? This will open SteamVR once to register as a plugin.";
+            config.steamvr.enable = Confirm::new().with_prompt(prompt).interact().unwrap();
+
+            // Clock
+            let prompt = "Would you like to use the Clock plugin? This requires your avatar use a compatible prefab.";
+            config.clock.enable = Confirm::new().with_prompt(prompt).interact().unwrap();
+
+            // LastFM Chatbox
+            let prompt = "Would you like to use the LastFM plugin? This is the most versatile and easy to setup scrobbler.";
+            if Confirm::new().with_prompt(prompt).interact().unwrap() {
+                config.lastfm.enable = true;
+
+                // LastFM Username
+                let prompt = "\nWhat is your LastFM username?";
+                config.lastfm.username = Input::new()
+                    .with_prompt(prompt)
+                    .default("".into())
+                    .interact_text()
+                    .unwrap();
+
+                println!("Please setup one of the scrobbler apps or services if you haven't");
+                println!("https://last.fm/about/trackmymusic");
+            } else {
+                // Spotify Chatbox
+                let prompt = "Would you like to use the Spotify plugin? This requires manually setting up a Spotify Developer Application.";
+                if Confirm::new().with_prompt(prompt).interact().unwrap() {
+                    config.spotify.enable_chatbox = true;
+                    println!("Please follow the guide at the link below to setup Spotify");
+                    println!("https://github.com/ShayBox/VRC-OSC/tree/master/plugin-spotify#how-to-setup");
+                }
+            }
+
+            config
+        } else {
+            config
         }
     }
 }

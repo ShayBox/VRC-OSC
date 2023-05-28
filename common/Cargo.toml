@@ -13,6 +13,7 @@ license.workspace = true
 [dependencies]
 abi_stable = { workspace = true, features = ["rust_latest_stable"] }
 anyhow.workspace = true
+dialoguer = "0.10"
 serde = { workspace = true, features = ["derive"] }
 structstruck.workspace = true
 toml = "0.7"
