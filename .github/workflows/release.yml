@@ -56,11 +56,11 @@ jobs:
 
       - name: Build Release Binary (macOS)
         if: ${{ matrix.runner == 'macos-latest' }}
-        run: cargo build --release --target ${{ matrix.target }} --workspace --exclude plugin-steamvr
+        run: cargo build --release --target ${{ matrix.target }} --no-default-features --workspace --exclude plugin-steamvr
 
       - name: Build Release Binary (Other)
         if: ${{ matrix.runner != 'macos-latest' }}
-        run: cargo build --release --target ${{ matrix.target }}
+        run: cargo build --release --target ${{ matrix.target }} --no-default-features
 
       - name: Create Zip Archive (Windows)
         if: ${{ matrix.runner == 'windows-latest' }}

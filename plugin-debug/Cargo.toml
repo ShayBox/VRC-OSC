@@ -19,3 +19,7 @@ abi_stable = { workspace = true, features = ["rust_latest_stable"] }
 anyhow.workspace = true
 common.workspace = true
 rosc.workspace = true
+
+[features]
+default = ["dotenvy"]
+dotenvy = ["common/dotenvy"]

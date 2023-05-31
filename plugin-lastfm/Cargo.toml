@@ -28,3 +28,7 @@ serde = { workspace = true, features = ["derive"] }
 serde-this-or-that = "0.4"
 structstruck.workspace = true
 terminal-link = "0.1"
+
+[features]
+default = ["dotenvy"]
+dotenvy = ["common/dotenvy"]

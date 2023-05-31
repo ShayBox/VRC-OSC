@@ -14,7 +14,12 @@ license.workspace = true
 abi_stable = { workspace = true, features = ["rust_latest_stable"] }
 anyhow.workspace = true
 common.workspace = true
+human-panic = "1.1"
 rosc.workspace = true
 
 [build-dependencies]
 winres = "0.1"
+
+[features]
+default = ["dotenvy"]
+dotenvy = ["common/dotenvy"]

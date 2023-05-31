@@ -10,7 +10,7 @@ members = [
 ]
 
 [workspace.package]
-version = "1.8.0"
+version = "1.8.1"
 authors = ["Shayne Hartford <shaybox@shaybox.com>"]
 edition = "2021"
 readme = "README.md"
@@ -20,7 +20,7 @@ license = "MIT"
 [workspace.dependencies]
 abi_stable = { version = "0.11", features = ["rust_latest_stable"] }
 anyhow = "1.0"
-common = { path = "common" }
+common = { path = "common", default-features = false }
 rosc = "0.10"
 serde = "1.0"
 structstruck = "0.4"

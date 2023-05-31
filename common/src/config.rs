@@ -1,12 +1,39 @@
 use std::{
-    fs::OpenOptions,
+    fs::File,
     io::{Read, Seek, Write},
     path::PathBuf,
 };
 
 use anyhow::Result;
 use dialoguer::{Confirm, Input};
+#[cfg(feature = "dotenvy")]
+use dotenvy_macro::dotenv;
 use serde::{Deserialize, Serialize};
+
+#[cfg(feature = "dotenvy")]
+const LASTFM_API_KEY: &str = dotenv!("LASTFM_API_KEY");
+#[cfg(not(feature = "dotenvy"))]
+const LASTFM_API_KEY: &str = env!("LASTFM_API_KEY");
+
+#[cfg(feature = "dotenvy")]
+const LASTFM_USERNAME: &str = dotenv!("LASTFM_USERNAME");
+#[cfg(not(feature = "dotenvy"))]
+const LASTFM_USERNAME: &str = env!("LASTFM_USERNAME");
+
+#[cfg(feature = "dotenvy")]
+const SPOTIFY_CALLBACK: &str = dotenv!("SPOTIFY_CALLBACK");
+#[cfg(not(feature = "dotenvy"))]
+const SPOTIFY_CALLBACK: &str = env!("SPOTIFY_CALLBACK");
+
+#[cfg(feature = "dotenvy")]
+const SPOTIFY_CLIENT: &str = dotenv!("SPOTIFY_CLIENT");
+#[cfg(not(feature = "dotenvy"))]
+const SPOTIFY_CLIENT: &str = env!("SPOTIFY_CLIENT");
+
+#[cfg(feature = "dotenvy")]
+const SPOTIFY_SECRET: &str = dotenv!("SPOTIFY_SECRET");
+#[cfg(not(feature = "dotenvy"))]
+const SPOTIFY_SECRET: &str = env!("SPOTIFY_SECRET");
 
 structstruck::strike! {
     #[strikethrough[derive(Debug, Clone, Serialize, Deserialize)]]
@@ -53,7 +80,7 @@ structstruck::strike! {
 
 impl Default for VrcConfig {
     fn default() -> Self {
-        let mut config = Self {
+        Self {
             osc: Osc {
                 bind_addr: "0.0.0.0:9001".into(),
                 send_addr: "127.0.0.1:9000".into(),
@@ -66,17 +93,17 @@ impl Default for VrcConfig {
             },
             debug: Debug { enable: false },
             lastfm: Lastfm {
-                api_key: env!("LASTFM_API_KEY").into(),
-                username: env!("LASTFM_USERNAME").into(),
+                api_key: LASTFM_API_KEY.into(),
+                username: LASTFM_USERNAME.into(),
                 format: "📻 {song} - {artists}".into(),
                 enable: false,
                 send_once: false,
                 polling: 10,
             },
             spotify: Spotify {
-                client_id: env!("SPOTIFY_CLIENT").into(),
-                client_secret: env!("SPOTIFY_SECRET").into(),
-                redirect_uri: env!("SPOTIFY_CALLBACK").into(),
+                client_id: SPOTIFY_CLIENT.into(),
+                client_secret: SPOTIFY_SECRET.into(),
+                redirect_uri: SPOTIFY_CALLBACK.into(),
                 format: "📻 {song} - {artists}".into(),
                 refresh_token: "".into(),
                 enable_chatbox: false,
@@ -89,46 +116,6 @@ impl Default for VrcConfig {
                 enable: false,
                 register: true,
             },
-        };
-
-        let prompt = "Would you like to use the setup wizard? You can manually edit the config.toml file later.";
-        if Confirm::new().with_prompt(prompt).interact().unwrap() {
-            // SteamVR
-            let prompt = "Would you like VRC-OSC to auto-start with SteamVR? This will open SteamVR once to register as a plugin.";
-            config.steamvr.enable = Confirm::new().with_prompt(prompt).interact().unwrap();
-
-            // Clock
-            let prompt = "Would you like to use the Clock plugin? This requires your avatar use a compatible prefab.";
-            config.clock.enable = Confirm::new().with_prompt(prompt).interact().unwrap();
-
-            // LastFM Chatbox
-            let prompt = "Would you like to use the LastFM plugin? This is the most versatile and easy to setup scrobbler.";
-            if Confirm::new().with_prompt(prompt).interact().unwrap() {
-                config.lastfm.enable = true;
-
-                // LastFM Username
-                let prompt = "\nWhat is your LastFM username?";
-                config.lastfm.username = Input::new()
-                    .with_prompt(prompt)
-                    .default("".into())
-                    .interact_text()
-                    .unwrap();
-
-                println!("Please setup one of the scrobbler apps or services if you haven't");
-                println!("https://last.fm/about/trackmymusic");
-            } else {
-                // Spotify Chatbox
-                let prompt = "Would you like to use the Spotify plugin? This requires manually setting up a Spotify Developer Application.";
-                if Confirm::new().with_prompt(prompt).interact().unwrap() {
-                    config.spotify.enable_chatbox = true;
-                    println!("Please follow the guide at the link below to setup Spotify");
-                    println!("https://github.com/ShayBox/VRC-OSC/tree/master/plugin-spotify#how-to-setup");
-                }
-            }
-
-            config
-        } else {
-            config
         }
     }
 }
@@ -145,7 +132,7 @@ impl VrcConfig {
 
     pub fn load() -> Result<Self> {
         let config_path = Self::get_path()?;
-        let mut file = OpenOptions::new()
+        let mut file = File::options()
             .read(true)
             .write(true)
             .create(true)
@@ -153,14 +140,15 @@ impl VrcConfig {
 
         let mut content = String::new();
         file.read_to_string(&mut content)?;
+        file.rewind()?;
 
         match toml::from_str(&content) {
             Ok(config) => Ok(config),
             Err(_) => {
-                let config = VrcConfig::default();
-                let text = toml::to_string(&config)?;
+                let mut config = VrcConfig::default();
+                setup_wizard(&mut config)?;
 
-                file.rewind()?;
+                let text = toml::to_string(&config)?;
                 file.write_all(text.as_bytes())?;
 
                 Ok(config)
@@ -170,7 +158,7 @@ impl VrcConfig {
 
     pub fn save(&mut self) -> Result<()> {
         let config_path = Self::get_path()?;
-        let mut file = OpenOptions::new()
+        let mut file = File::options()
             .write(true)
             .create(true)
             .truncate(true)
@@ -181,4 +169,75 @@ impl VrcConfig {
 
         Ok(())
     }
+}
+
+fn setup_wizard(config: &mut VrcConfig) -> Result<()> {
+    let mut confirm = Confirm::new();
+
+    // ! Setup Wizard
+    let prompts = [
+        "Would you like to use the setup wizard?",
+        "You can manually edit the config.toml file later.",
+    ];
+    if !prompt(&mut confirm, prompts)? {
+        return Ok(());
+    }
+
+    // ! SteamVR Plugin (plugin-steamvr)
+    let prompts = [
+        "Would you like VRC-OSC to auto-start with SteamVR?",
+        "This will open SteamVR once to register as a plugin.",
+    ];
+    config.steamvr.enable = prompt(&mut confirm, prompts)?;
+
+    // ! Clock Plugin (plugin-clock)
+    let prompts = [
+        "Would you like to use the Clock plugin?",
+        "This requires your avatar use a compatible prefab.",
+    ];
+    config.clock.enable = prompt(&mut confirm, prompts)?;
+
+    // ! LastFM Chatbox Plugin (plugin-lastfm)
+    let prompts = [
+        "Would you like to use the LastFM plugin?",
+        "This is the most versatile and easy to setup scrobbler.",
+    ];
+    if prompt(&mut confirm, prompts)? {
+        config.lastfm.enable = true;
+
+        // ! LastFM Username
+        let prompt = "What's your LastFM Username?";
+        config.lastfm.username = Input::new()
+            .with_prompt(prompt)
+            .default("".into())
+            .interact_text()
+            .unwrap();
+
+        let prompts = [
+            "Please setup one of the scrobbler apps, extensions, or services.",
+            "https://last.fm/about/trackmymusic",
+        ];
+        println!("{}", prompts.join("\n"));
+    } else {
+        // ! Spotify Chatbox Plugin (plugin-spotify)
+        let prompts = [
+            "Would you like to use the Spotify plugin?",
+            "This requires manually setting up a Spotify Developer Application.",
+        ];
+        if prompt(&mut confirm, prompts)? {
+            config.spotify.enable_chatbox = true;
+
+            let prompts = [
+                "Please follow the guide at the link below to setup Spotify",
+                "https://github.com/ShayBox/VRC-OSC/tree/master/plugin-spotify#how-to-setup",
+            ];
+            println!("{}", prompts.join("\n"));
+        }
+    }
+
+    Ok(())
+}
+
+fn prompt(confirm: &mut Confirm, prompts: [&str; 2]) -> Result<bool> {
+    Ok(confirm.with_prompt(prompts.join(" ")).interact().unwrap())
 }

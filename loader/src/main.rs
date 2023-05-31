@@ -4,8 +4,9 @@ use anyhow::Result;
 use common::config::VrcConfig;
 
 fn main() -> Result<()> {
-    let config = VrcConfig::load()?;
+    human_panic::setup_panic!();
 
+    let config = VrcConfig::load()?;
     if config.lastfm.enable && config.spotify.enable_chatbox {
         println!("You cannot enable LastFM and Spotify Chatbox at the same time.");
         return Ok(());

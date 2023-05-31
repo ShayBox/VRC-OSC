@@ -24,3 +24,7 @@ terminal-link = "0.1"
 tiny_http = "0.12"
 url = "2.3"
 webbrowser = "0.8"
+
+[features]
+default = ["dotenvy"]
+dotenvy = ["common/dotenvy"]
