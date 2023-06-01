@@ -1,31 +1,25 @@
 use std::net::UdpSocket;
 
 use anyhow::Result;
-use common::config::VrcConfig;
+use rosc::decoder::MTU;
+use vrc_osc::config::LoaderConfig;
 
 fn main() -> Result<()> {
     human_panic::setup_panic!();
 
-    let config = VrcConfig::load()?;
-    if config.lastfm.enable && config.spotify.enable_chatbox {
-        println!("You cannot enable LastFM and Spotify Chatbox at the same time.");
-        return Ok(());
-    }
-
-    let osc = UdpSocket::bind(&config.osc.bind_addr)?;
-    let plugins = vrc_osc::load_plugins()?;
+    let libraries = vrc_osc::get_libraries()?;
+    let loader_config = LoaderConfig::load(&libraries)?;
+    let loader_socket = UdpSocket::bind(&loader_config.bind_addr)?;
+    let plugin_sockets = vrc_osc::load_plugins(libraries, &loader_config)?;
 
     loop {
-        loop {
-            let mut buf = [0u8; rosc::decoder::MTU];
-            let Ok(size) = osc.recv(&mut buf) else {
-                continue;
-            };
+        let mut buf = [0u8; MTU];
+        let Ok(size) = loader_socket.recv(&mut buf) else {
+            continue;
+        };
 
-            for (_plugin, state) in plugins.values() {
-                let bind_addr = state.bind_addr().to_string();
-                osc.send_to(&buf[..size], bind_addr)?;
-            }
+        for local_addr in &plugin_sockets {
+            loader_socket.send_to(&buf[..size], local_addr)?;
         }
     }
 }

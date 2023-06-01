@@ -1,34 +1,21 @@
 [package]
 name = "plugin-lastfm"
-description = "Displays the currently playing song via chatbox"
+description = "Sends the current song to the chatbox"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true
-readme.workspace = true
-repository.workspace = true
-license.workspace = true
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
 name = "lastfm"
 crate-type = ["cdylib"]
 
 [dependencies]
-abi_stable.workspace = true
 anyhow.workspace = true
-common.workspace = true
-reqwest = { version = "0.11", default-features = false, features = [
-    "rustls-tls",
-    "blocking",
-    "json",
-] }
+dialoguer.workspace = true
+reqwest = { version = "0.11", default-features = false, features = ["rustls-tls", "blocking", "json"] }
 rosc.workspace = true
 serde = { workspace = true, features = ["derive"] }
 serde-this-or-that = "0.4"
 structstruck.workspace = true
 terminal-link = "0.1"
-
-[features]
-default = ["dotenvy"]
-dotenvy = ["common/dotenvy"]
+toml.workspace = true

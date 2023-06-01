@@ -1,16 +1,8 @@
 [workspace]
-members = [
-    "common",
-    "loader",
-    "plugin-clock",
-    "plugin-debug",
-    "plugin-lastfm",
-    "plugin-spotify",
-    "plugin-steamvr",
-]
+members = ["loader", "plugin-clock", "plugin-debug", "plugin-lastfm", "plugin-spotify", "plugin-steamvr"]
 
 [workspace.package]
-version = "1.8.1"
+version = "2.0.0"
 authors = ["Shayne Hartford <shaybox@shaybox.com>"]
 edition = "2021"
 readme = "README.md"
@@ -18,16 +10,16 @@ repository = "https://github.com/ShayBox/VRC-OSC"
 license = "MIT"
 
 [workspace.dependencies]
-abi_stable = { version = "0.11", features = ["rust_latest_stable"] }
-anyhow = "1.0"
-common = { path = "common", default-features = false }
+anyhow = "1"
+dialoguer = "0.10"
 rosc = "0.10"
-serde = "1.0"
+serde = "1"
 structstruck = "0.4"
+toml = "0.7"
 
+# https://github.com/johnthagen/min-sized-rust
 [profile.release]
-strip = true
-opt-level = "z"
+strip = true      # Automatically strip symbols from the binary.
+opt-level = "z"   # Optimize for size.
 lto = true
 codegen-units = 1
-panic = "abort"

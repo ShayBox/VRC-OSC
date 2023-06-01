@@ -1,10 +1,10 @@
-# Time Plugin
+# Clock Plugin
 
-Sends the time via avatar parameters for watch prefabs.
+Sends the time to avatar prefabs
 
 ## Avatar Parameters
 
-This plugin uses the [VRCOSC Watch Prefab](https://github.com/VolcanicArts/VRCOSC/releases/latest)  
+This plugin supports the [VRCOSC Watch Prefab](https://github.com/VolcanicArts/VRCOSC/releases/latest)  
 Support for additional prefabs are welcome
 
 | Parameter            | Type  |

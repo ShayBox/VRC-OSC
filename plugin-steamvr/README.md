@@ -1,3 +1,3 @@
 # SteamVR Plugin
 
-Registers VRC-OSC as a SteamVR addon for auto-start/stop.
+Registers VRC-OSC as a SteamVR overlay for auto-start/stop

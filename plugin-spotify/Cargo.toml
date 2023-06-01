@@ -1,30 +1,22 @@
 [package]
 name = "plugin-spotify"
-description = "Displays the currently playing song via chatbox, and controls playback via avatar parameters"
+description = "Sends the current song to the chatbox and controls playback via avatar prefabs"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true
-readme.workspace = true
-repository.workspace = true
-license.workspace = true
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
 name = "spotify"
 crate-type = ["cdylib"]
 
 [dependencies]
-abi_stable.workspace = true
 anyhow.workspace = true
-common.workspace = true
+dialoguer.workspace = true
 ferrispot = { version = "0.4", features = ["sync"] }
 rosc.workspace = true
+serde = { workspace = true, features = ["derive"] }
 terminal-link = "0.1"
 tiny_http = "0.12"
-url = "2.3"
+toml.workspace = true
+url = "2"
 webbrowser = "0.8"
-
-[features]
-default = ["dotenvy"]
-dotenvy = ["common/dotenvy"]

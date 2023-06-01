@@ -1,25 +1,16 @@
 [package]
 name = "plugin-clock"
-description = "Sends the time via avatar parameters for watch prefabs"
+description = "Sends the time to avatar prefabs"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true
-readme.workspace = true
-repository.workspace = true
-license.workspace = true
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
 name = "clock"
 crate-type = ["cdylib"]
 
 [dependencies]
-abi_stable.workspace = true
 anyhow.workspace = true
-common.workspace = true
 rosc.workspace = true
-
-[features]
-default = ["dotenvy"]
-dotenvy = ["common/dotenvy"]
+serde = { workspace = true, features = ["derive"] }
+toml.workspace = true

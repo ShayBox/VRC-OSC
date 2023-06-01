@@ -1,15 +1,16 @@
 use std::{
     collections::HashMap,
-    fs::OpenOptions,
+    fs::File,
     io::{BufReader, BufWriter},
     path::PathBuf,
 };
 
+use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
 structstruck::strike! {
     #[strikethrough[derive(Debug, Serialize, Deserialize)]]
-    pub struct Manifest {
+    pub struct OVRManifest {
         pub source: String,
         pub applications: Vec<pub struct {
             pub app_key: String,
@@ -24,7 +25,7 @@ structstruck::strike! {
     }
 }
 
-impl Default for Manifest {
+impl Default for OVRManifest {
     fn default() -> Self {
         Self {
             source: "builtin".into(),
@@ -45,33 +46,32 @@ impl Default for Manifest {
     }
 }
 
-impl Manifest {
-    pub fn get_path() -> anyhow::Result<PathBuf> {
-        let mut manifest_path = std::env::current_exe()?;
+impl OVRManifest {
+    pub fn get_path() -> Result<PathBuf> {
+        let mut path = std::env::current_exe()?;
+        path.set_file_name("vrc-osc");
+        path.set_extension("vrmanifest");
 
-        manifest_path.set_file_name("vrc-osc");
-        manifest_path.set_extension("vrmanifest");
-
-        Ok(manifest_path)
+        Ok(path)
     }
 
-    pub fn load() -> anyhow::Result<Self> {
-        let manifest_path = Self::get_path()?;
-        let file = OpenOptions::new()
+    pub fn load() -> Result<Self> {
+        let path = Self::get_path()?;
+        let file = File::options()
             .read(true)
             .write(true)
             .create(true)
-            .open(manifest_path)?;
+            .open(path)?;
 
         let reader = BufReader::new(&file);
         match serde_json::from_reader(reader) {
             Ok(config) => Ok(config),
             Err(_) => {
-                let config = Manifest::default();
+                let manifest = Default::default();
                 let writer = BufWriter::new(&file);
-                serde_json::to_writer_pretty(writer, &config)?;
+                serde_json::to_writer_pretty(writer, &manifest)?;
 
-                Ok(config)
+                Ok(manifest)
             }
         }
     }

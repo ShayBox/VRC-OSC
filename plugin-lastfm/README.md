@@ -1,3 +1,7 @@
 # LastFM Plugin
 
-Displays the currently playing song via chatbox.
+Sends the current song to the chatbox
+
+## Screenshot
+
+![Screenshot]()
