@@ -1,0 +1,15 @@
+[package]
+name = "plugin-control"
+description = "Controls media playback via avatar parameters"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+
+[lib]
+name = "control"
+crate-type = ["cdylib"]
+
+[dependencies]
+anyhow.workspace = true
+enigo = { git = "https://github.com/Shays-Forks/enigo.git" }
+rosc.workspace = true

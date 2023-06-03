@@ -14,11 +14,14 @@ Dynamically loaded VRChat OSC plugins written in Rust
 ## Plugins:
 
 - [`plugin-clock`](/plugin-clock): Sends the time to avatar prefabs
+- [`plugin-control`](/plugin-control): Control media playback via avatar parameters[^1]
 - [`plugin-debug`](/plugin-debug): Log received OSC packets for debugging
 - [`plugin-lastfm`](/plugin-lastfm): Sends the current song to the chatbox
-- [`plugin-spotify`](/plugin-spotify): Sends the current song to the chatbox and controls playback via avatar prefabs
-- [`plugin-steamvr`](/plugin-steamvr): Registers VRC-OSC as a SteamVR overlay for auto-start/stop
+- [`plugin-spotify`](/plugin-spotify): Sends the current song to the chatbox and control playback via avatar prefabs
+- [`plugin-steamvr`](/plugin-steamvr): Registers VRC-OSC as a SteamVR overlay for auto-start/stop[^1]
 
 ## Planned:
 
-- [`plugin-controls`](/plugin-controls): Controls media playback via avatar parameters.
+- [`plugin-caption`](/plugin-caption): Live captions your speech to the chatbox
+
+[^1]: Windows and Linux only

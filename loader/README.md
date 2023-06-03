@@ -7,10 +7,6 @@
   </a>
 </div>
 
-# LastFM Plugin
+# Loader
 
-Sends the current song to the chatbox
-
-## Screenshot
-
-![Screenshot]()
+Dynamically loaded VRChat OSC plugins written in Rust

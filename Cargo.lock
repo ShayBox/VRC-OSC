@@ -436,6 +436,31 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e496a50fda8aacccc86d7529e2c1e0892dbd0f898a6b5645b5561b89c3210efa"
 
 [[package]]
+name = "core-graphics"
+version = "0.22.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2581bbab3b8ffc6fcbd550bf46c355135d16e9ff2a6ea032ad6b9bf1d7efe4fb"
+dependencies = [
+ "bitflags",
+ "core-foundation",
+ "core-graphics-types",
+ "foreign-types",
+ "libc",
+]
+
+[[package]]
+name = "core-graphics-types"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3a68b68b3446082644c91ac778bf50cd4104bfb002b5a6a7c44cca5a2c70788b"
+dependencies = [
+ "bitflags",
+ "core-foundation",
+ "foreign-types",
+ "libc",
+]
+
+[[package]]
 name = "cpufeatures"
 version = "0.2.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -583,6 +608,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "071a31f4ee85403370b58aca746f01041ede6f0da2730960ad001edc2b71b394"
 dependencies = [
  "cfg-if",
+]
+
+[[package]]
+name = "enigo"
+version = "0.1.2"
+source = "git+https://github.com/Shays-Forks/enigo.git#f70ee6adeceeb68f6a3bd8043d7440378f37a75e"
+dependencies = [
+ "core-graphics",
+ "libc",
+ "objc",
+ "pkg-config",
+ "windows",
 ]
 
 [[package]]
@@ -1290,9 +1327,9 @@ checksum = "9670a07f94779e00908f3e686eab508878ebb390ba6e604d3a284c00e8d0487b"
 
 [[package]]
 name = "openssl"
-version = "0.10.53"
+version = "0.10.54"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "12df40a956736488b7b44fe79fe12d4f245bb5b3f5a1f6095e499760015be392"
+checksum = "69b3f656a17a6cbc115b5c7a40c616947d213ba182135b014d6051b73ab6f019"
 dependencies = [
  "bitflags",
  "cfg-if",
@@ -1400,7 +1437,7 @@ checksum = "26072860ba924cbfa98ea39c8c19b4dd6a4a25423dbdf219c1eca91aa0cf6964"
 
 [[package]]
 name = "plugin-clock"
-version = "2.0.0"
+version = "2.1.0"
 dependencies = [
  "anyhow",
  "rosc",
@@ -1409,8 +1446,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "plugin-control"
+version = "2.1.0"
+dependencies = [
+ "anyhow",
+ "enigo",
+ "rosc",
+]
+
+[[package]]
 name = "plugin-debug"
-version = "2.0.0"
+version = "2.1.0"
 dependencies = [
  "anyhow",
  "rosc",
@@ -1418,7 +1464,7 @@ dependencies = [
 
 [[package]]
 name = "plugin-lastfm"
-version = "2.0.0"
+version = "2.1.0"
 dependencies = [
  "anyhow",
  "dialoguer",
@@ -1433,7 +1479,7 @@ dependencies = [
 
 [[package]]
 name = "plugin-spotify"
-version = "2.0.0"
+version = "2.1.0"
 dependencies = [
  "anyhow",
  "dialoguer",
@@ -1449,7 +1495,7 @@ dependencies = [
 
 [[package]]
 name = "plugin-steamvr"
-version = "2.0.0"
+version = "2.1.0"
 dependencies = [
  "anyhow",
  "ovr_overlay",
@@ -2249,7 +2295,7 @@ checksum = "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f"
 
 [[package]]
 name = "vrc-osc"
-version = "2.0.0"
+version = "2.1.0"
 dependencies = [
  "anyhow",
  "dialoguer",
@@ -2441,6 +2487,15 @@ name = "winapi-x86_64-pc-windows-gnu"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
+
+[[package]]
+name = "windows"
+version = "0.48.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e686886bc078bc1b0b600cac0147aadb815089b6e4da64016cbd754b6342700f"
+dependencies = [
+ "windows-targets 0.48.0",
+]
 
 [[package]]
 name = "windows-sys"

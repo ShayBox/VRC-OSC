@@ -7,17 +7,20 @@
   </a>
 </div>
 
-# Clock Plugin
+# Control Plugin
 
-Sends the time to avatar prefabs
+Control media playback via avatar parameters  
+This plugin is Windows and Linux only because macOS doesn't support Media keys
 
 ## Avatar Parameters
 
-This plugin supports the [VRCOSC Watch Prefab](https://github.com/VolcanicArts/VRCOSC/releases/latest)  
+This plugin ***partially*** supports the [VRCOSC Media Prefab](https://github.com/VolcanicArts/VRCOSC/releases/latest)  
 Support for additional prefabs are welcome
 
-| Parameter            | Type  |
-|----------------------|-------|
-| VRCOSC/Clock/Hours   | Float |
-| VRCOSC/Clock/Minutes | Float |
-| VRCOSC/Clock/Seconds | Float |
+| Parameter             | Type  |
+|-----------------------|-------|
+| VRCOSC/Media/Play     | None  |
+| VRCOSC/Media/Next     | None  |
+| VRCOSC/Media/Previous | None  |
+| VRCOSC/Media/Muted    | Bool  |
+

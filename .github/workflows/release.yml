@@ -46,7 +46,7 @@ jobs:
         if: ${{ matrix.runner == 'ubuntu-latest' }}
         run: |
           sudo apt-get update
-          sudo apt-get install -y libssl-dev
+          sudo apt-get install -y libssl-dev libxdo-dev
 
       - name: Update Rust Toolchain
         run: rustup update stable
@@ -56,7 +56,7 @@ jobs:
 
       - name: Build Release Binary (macOS)
         if: ${{ matrix.runner == 'macos-latest' }}
-        run: cargo build --release --target ${{ matrix.target }} --workspace --exclude plugin-steamvr
+        run: cargo build --release --target ${{ matrix.target }} --workspace --exclude plugin-control --exclude plugin-steamvr
 
       - name: Build Release Binary (Other)
         if: ${{ matrix.runner != 'macos-latest' }}

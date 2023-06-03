@@ -6,14 +6,13 @@ use ferrispot::{
     model::playback::RepeatState,
     prelude::*,
 };
-use rosc::{OscPacket, OscType};
+use rosc::{decoder::MTU, OscPacket, OscType};
 
 pub fn thread_control(
     socket: Arc<UdpSocket>,
     spotify: SyncAuthorizationCodeUserClient,
 ) -> Result<()> {
-    let mut buf = [0u8; rosc::decoder::MTU];
-
+    let mut buf = [0u8; MTU];
     let mut previous_volume = None;
     loop {
         let (size, _addr) = socket.recv_from(&mut buf).unwrap();
