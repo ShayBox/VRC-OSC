@@ -1,4 +1,5 @@
-use std::{collections::HashMap, ffi::OsStr, net::UdpSocket, thread::Builder};
+use std::{collections::HashMap, ffi::OsStr, net::UdpSocket};
+use std::net::SocketAddr;
 
 use anyhow::Result;
 use libloading::{Library, Symbol};
@@ -47,26 +48,30 @@ pub fn get_libraries() -> Result<HashMap<String, Library>> {
 pub fn load_plugins(
     libraries: HashMap<String, Library>,
     loader_config: &LoaderConfig,
-) -> Result<Vec<String>> {
-    let mut local_addrs = Vec::new();
+) -> Result<Vec<SocketAddr>> {
+    let mut addrs = Vec::new();
     for (filename, library) in libraries {
         if !loader_config.enabled.contains(&filename) {
             continue; // Skip disabled libraries
         }
 
-        let socket = UdpSocket::bind("127.0.0.1:0")?;
-        socket.connect(&loader_config.send_addr)?;
+        let plugin_socket = UdpSocket::bind("127.0.0.1:0")?; // Dynamic port
+        let loader_addr = loader_config.bind_addr.replace("0.0.0.0", "127.0.0.1");
+        plugin_socket.connect(loader_addr)?;
 
-        let local_addr = socket.local_addr()?;
-        local_addrs.push(local_addr.to_string());
+        let plugin_addr = plugin_socket.local_addr()?;
+        addrs.push(plugin_addr);
 
-        Builder::new().name(filename).spawn(move || unsafe {
-            let main_fn: Symbol<fn(socket: UdpSocket) -> Result<()>> = library
-                .get(b"main")
-                .expect("Failed to get the main function");
-            main_fn(socket).expect("Failed to call the main function")
-        })?;
+        tokio::spawn(async move {
+            let load_fn: Symbol<fn(socket: UdpSocket)> = unsafe {
+                library
+                    .get(b"load")
+                    .expect("Failed to get the load function")
+            };
+
+            load_fn(plugin_socket);
+        });
     }
 
-    Ok(local_addrs)
+    Ok(addrs)
 }

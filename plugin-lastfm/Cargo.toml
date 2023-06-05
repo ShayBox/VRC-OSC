@@ -12,10 +12,11 @@ crate-type = ["cdylib"]
 [dependencies]
 anyhow.workspace = true
 dialoguer.workspace = true
-reqwest = { version = "0.11", default-features = false, features = ["rustls-tls", "blocking", "json"] }
+reqwest = { version = "0.11", default-features = false, features = ["rustls-tls", "json"] }
 rosc.workspace = true
 serde = { workspace = true, features = ["derive"] }
 serde-this-or-that = "0.4"
 structstruck.workspace = true
 terminal-link = "0.1"
+tokio = { workspace = true, features = ["macros", "rt"] }
 toml.workspace = true

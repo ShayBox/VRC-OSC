@@ -1,34 +1,36 @@
-use std::{net::UdpSocket, sync::Arc, thread::Builder, time::Duration};
+use std::{net::UdpSocket, sync::Arc, time::Duration};
 
 use anyhow::{bail, Result};
 use ferrispot::{
     client::{
         authorization_code::{
-            SyncAuthorizationCodeUserClient,
-            SyncIncompleteAuthorizationCodeUserClient,
+            AsyncAuthorizationCodeUserClient,
+            AsyncIncompleteAuthorizationCodeUserClient,
         },
         SpotifyClientBuilder,
     },
-    prelude::AccessTokenRefreshSync,
+    prelude::AccessTokenRefreshAsync,
     scope::Scope,
 };
 use tiny_http::{Header, Response, Server};
 use url::Url;
 
-use crate::{chatbox::thread_chatbox, config::SpotifyConfig, control::thread_control};
+use crate::{chatbox::task_chatbox, config::SpotifyConfig, control::task_control};
 
 mod chatbox;
 mod config;
 mod control;
 
 #[no_mangle]
-fn main(socket: UdpSocket) -> Result<()> {
+#[tokio::main(flavor = "current_thread")]
+async fn load(socket: UdpSocket) -> Result<()> {
     let mut config = SpotifyConfig::load()?;
     let user_client = {
         if config.pkce {
-            let spotify_client = SpotifyClientBuilder::new(&config.client_id).build_sync();
+            let spotify_client = SpotifyClientBuilder::new(&config.client_id).build_async();
             let user_client = spotify_client
-                .authorization_code_client_with_refresh_token_and_pkce(&config.refresh_token);
+                .authorization_code_client_with_refresh_token_and_pkce(&config.refresh_token)
+                .await;
 
             match user_client {
                 Ok(user_client) => user_client,
@@ -43,15 +45,17 @@ fn main(socket: UdpSocket) -> Result<()> {
                         ])
                         .build();
 
-                    finish_authentication_and_save(&mut config, incomplete_auth_code_client)?
+                    finish_authentication_and_save(&mut config, incomplete_auth_code_client).await?
                 }
             }
         } else {
             let spotify_client = SpotifyClientBuilder::new(&config.client_id)
                 .client_secret(&config.client_secret)
-                .build_sync()?;
-            let user_client =
-                spotify_client.authorization_code_client_with_refresh_token(&config.refresh_token);
+                .build_async()
+                .await?;
+            let user_client = spotify_client
+                .authorization_code_client_with_refresh_token(&config.refresh_token)
+                .await;
 
             match user_client {
                 Ok(user_client) => user_client,
@@ -66,7 +70,7 @@ fn main(socket: UdpSocket) -> Result<()> {
                         ])
                         .build();
 
-                    finish_authentication_and_save(&mut config, incomplete_auth_code_client)?
+                    finish_authentication_and_save(&mut config, incomplete_auth_code_client).await?
                 }
             }
         }
@@ -79,34 +83,39 @@ fn main(socket: UdpSocket) -> Result<()> {
         let socket = socket.clone();
         let user_client = user_client.clone();
 
-        Builder::new()
-            .name("Spotify Control".into())
-            .spawn(move || thread_control(socket, user_client).expect("thread_control"))?;
+        tokio::spawn(async move {
+            println!("5");
+            task_control(socket, user_client)
+                .await
+                .expect("task_control")
+        });
     }
 
     if config.enable_chatbox {
-        Builder::new()
-            .name("Spotify Chatbox".into())
-            .spawn(move || thread_chatbox(socket, user_client, config).expect("thread_chatbox"))?;
+        tokio::spawn(async move {
+            task_chatbox(socket, user_client, config)
+                .await
+                .expect("task_chatbox")
+        });
     }
 
     loop {
         // Keep the threads alive - STATUS_ACCESS_VIOLATION
-        std::thread::sleep(Duration::from_secs(u64::MAX));
+        tokio::time::sleep(Duration::from_secs(u64::MAX)).await;
     }
 }
 
-fn finish_authentication_and_save(
+async fn finish_authentication_and_save(
     config: &mut SpotifyConfig,
-    client: SyncIncompleteAuthorizationCodeUserClient,
-) -> Result<SyncAuthorizationCodeUserClient> {
+    client: AsyncIncompleteAuthorizationCodeUserClient,
+) -> Result<AsyncAuthorizationCodeUserClient> {
     let authorize_url = client.get_authorize_url();
     let redirect_uri = &config.redirect_uri;
 
     let (code, state) = get_user_authorization(&authorize_url, redirect_uri)?;
-    let user_client = client.finalize(code.trim(), state.trim())?;
+    let user_client = client.finalize(code.trim(), state.trim()).await?;
 
-    user_client.refresh_access_token()?;
+    user_client.refresh_access_token().await?;
 
     config.refresh_token = user_client.get_refresh_token();
     config.save()?;

@@ -12,3 +12,4 @@ crate-type = ["cdylib"]
 [dependencies]
 anyhow.workspace = true
 rosc.workspace = true
+tokio = { workspace = true, features = ["macros", "rt"] }

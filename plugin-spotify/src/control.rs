@@ -1,84 +1,157 @@
-use std::{net::UdpSocket, sync::Arc};
+use std::{collections::HashMap, net::UdpSocket, sync::Arc, time::Instant};
 
 use anyhow::Result;
 use ferrispot::{
-    client::authorization_code::SyncAuthorizationCodeUserClient,
+    client::authorization_code::AsyncAuthorizationCodeUserClient,
     model::playback::RepeatState,
     prelude::*,
 };
-use rosc::{decoder::MTU, OscPacket, OscType};
+use rosc::{decoder::MTU, OscMessage, OscPacket, OscType};
 
-pub fn thread_control(
+pub async fn task_control(
     socket: Arc<UdpSocket>,
-    spotify: SyncAuthorizationCodeUserClient,
+    spotify: AsyncAuthorizationCodeUserClient,
 ) -> Result<()> {
+    let mut muted_volume = None;
+    let mut instant = Instant::now();
     let mut buf = [0u8; MTU];
-    let mut previous_volume = None;
     loop {
-        let (size, _addr) = socket.recv_from(&mut buf).unwrap();
-        let (_buf, packet) = rosc::decoder::decode_udp(&buf[..size]).unwrap();
+        let size = socket.recv(&mut buf)?;
+        let (_buf, packet) = rosc::decoder::decode_udp(&buf[..size])?;
         let OscPacket::Message(packet) = packet else {
             continue; // I don't think VRChat uses bundles
         };
 
         let addr = packet.addr.replace("/avatar/parameters/VRCOSC/Media/", "");
         let Some(arg) = packet.args.first() else {
-            continue;
+            continue; // No first argument was supplied
         };
 
-        let Some(playback_state) = spotify.playback_state().send_sync()? else {
-            continue;
+        let Some(playback_state) = spotify.playback_state().send_async().await? else {
+            continue; // No media is currently playing
         };
 
-        if previous_volume.is_none() {
-            previous_volume = Some(playback_state.device().volume_percent());
+        let _ = try_sync_media_state_to_vrchat_menu_parameters(&socket, &spotify).await;
+
+        if Instant::now().duration_since(instant).as_secs() < 1 {
+            continue; // Debounce VRChat menu buttons
         }
 
-        let request = match addr.as_ref() {
-            "Play" => spotify.pause(),
+        if muted_volume.is_none() {
+            muted_volume = Some(playback_state.device().volume_percent());
+        }
+
+        match addr.as_ref() {
+            "Play" => {
+                let OscType::Bool(play) = arg.to_owned() else {
+                    continue;
+                };
+
+                if play {
+                    spotify.resume()
+                } else {
+                    spotify.pause()
+                }
+            }
             "Next" => spotify.next(),
             "Previous" => spotify.previous(),
             "Shuffle" => {
-                if let OscType::Bool(state) = arg.to_owned() {
-                    spotify.shuffle(state)
-                } else {
+                let OscType::Bool(shuffle) = arg.to_owned() else {
                     continue;
-                }
+                };
+
+                spotify.shuffle(shuffle)
             }
+            // Seeking is not required because position is not used multiple times
+            // "Seeking" => continue,
             "Muted" => {
-                if let OscType::Bool(mute) = arg.to_owned() {
-                    if mute {
-                        previous_volume = Some(playback_state.device().volume_percent());
-                        spotify.volume(0)
-                    } else {
-                        spotify.volume(previous_volume.expect("Failed to get previous volume"))
-                    }
-                } else {
+                let OscType::Bool(mute) = arg.to_owned() else {
                     continue;
-                }
+                };
+
+                let volume = if mute {
+                    muted_volume = Some(playback_state.device().volume_percent());
+                    0
+                } else {
+                    muted_volume.expect("Failed to get previous volume")
+                };
+
+                spotify.volume(volume)
             }
             "Repeat" => {
-                if let OscType::Int(state) = arg.to_owned() {
-                    let repeat_state = match state {
-                        0 => RepeatState::Off,
-                        1 => RepeatState::Track,
-                        2 => RepeatState::Context,
-                        _ => continue,
-                    };
-                    spotify.repeat_state(repeat_state)
-                } else {
+                let OscType::Int(repeat) = arg.to_owned() else {
                     continue;
-                }
+                };
+
+                let repeat_state = match repeat {
+                    0 => RepeatState::Off,
+                    1 => RepeatState::Track,
+                    2 => RepeatState::Context,
+                    _ => continue,
+                };
+
+                spotify.repeat_state(repeat_state)
             }
             "Volume" => {
-                if let OscType::Float(volume) = arg.to_owned() {
-                    spotify.volume((volume * 100.0) as u8)
-                } else {
+                let OscType::Float(volume) = arg.to_owned() else {
                     continue;
-                }
+                };
+
+                spotify.volume((volume * 100.0) as u8)
+            }
+            "Position" => {
+                let OscType::Float(position) = arg.to_owned() else {
+                    continue;
+                };
+
+                let min = 0;
+                let max = playback_state.currently_playing_item().timestamp();
+                let playback_position = (min + (max - min) * (position * 100.0) as u64) / 100;
+
+                spotify.seek(playback_position)
             }
             _ => continue,
-        };
-        request.send_sync()?;
+        }
+        .send_async()
+        .await?;
+
+        instant = Instant::now();
     }
+}
+
+/// Try to synchronize the media session state to the VRChat menu parameters
+async fn try_sync_media_state_to_vrchat_menu_parameters(
+    socket: &UdpSocket,
+    spotify: &AsyncAuthorizationCodeUserClient,
+) -> Result<()> {
+    let Some(playback_state) = spotify.playback_state().send_async().await? else {
+        return Ok(()); // No media is currently playing
+    };
+
+    let mut parameters = HashMap::new();
+
+    let play = playback_state.device().is_active();
+    parameters.insert("Play", OscType::Bool(play));
+
+    let shuffle = playback_state.shuffle_state();
+    parameters.insert("Shuffle", OscType::Bool(shuffle));
+
+    let repeat = match playback_state.repeat_state() {
+        RepeatState::Off => 0,
+        RepeatState::Track => 1,
+        RepeatState::Context => 2,
+    };
+    parameters.insert("Repeat", OscType::Int(repeat));
+
+    for (param, arg) in parameters {
+        let packet = OscPacket::Message(OscMessage {
+            addr: format!("/avatar/parameters/VRCOSC/Media/{param}"),
+            args: vec![arg],
+        });
+
+        let msg_buf = rosc::encoder::encode(&packet)?;
+        socket.send(&msg_buf)?;
+    }
+
+    Ok(())
 }

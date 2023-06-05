@@ -10,13 +10,16 @@ mod config;
 mod model;
 
 #[no_mangle]
-fn main(socket: UdpSocket) -> Result<()> {
+#[tokio::main(flavor = "current_thread")]
+async fn load(socket: UdpSocket) -> Result<()> {
     let config = LastFMConfig::load()?;
     let mut previous_track = String::new();
     loop {
-        let url = format!("https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user={}&api_key={}&format=json&limit=1", config.username, config.api_key);
-        let response = reqwest::blocking::get(url)?;
-        let lastfm = response.json::<LastFM>()?;
+        std::thread::sleep(Duration::from_secs(config.polling));
+
+        let url = format!("http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user={}&api_key={}&format=json&limit=1", config.username, config.api_key);
+        let response = reqwest::get(url).await?;
+        let lastfm = response.json::<LastFM>().await?;
         let tracks = lastfm
             .recent
             .tracks
@@ -54,7 +57,5 @@ fn main(socket: UdpSocket) -> Result<()> {
 
         let msg_buf = rosc::encoder::encode(&packet)?;
         socket.send(&msg_buf)?;
-
-        std::thread::sleep(Duration::from_secs(config.polling));
     }
 }

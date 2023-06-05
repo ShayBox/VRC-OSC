@@ -8,7 +8,8 @@ mod config;
 mod manifest;
 
 #[no_mangle]
-fn main(_socket: UdpSocket) -> Result<()> {
+#[tokio::main(flavor = "current_thread")]
+async fn load(_socket: UdpSocket) -> Result<()> {
     let config = SteamVRConfig::load()?;
     let manifest = OVRManifest::load()?;
     let path = OVRManifest::get_path()?;

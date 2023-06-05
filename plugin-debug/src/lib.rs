@@ -4,7 +4,8 @@ use anyhow::Result;
 use rosc::OscPacket;
 
 #[no_mangle]
-fn main(socket: UdpSocket) -> Result<()> {
+#[tokio::main(flavor = "current_thread")]
+async fn load(socket: UdpSocket) -> Result<()> {
     println!("Debug Enabled");
 
     let mut buf = [0u8; rosc::decoder::MTU];

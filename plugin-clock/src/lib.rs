@@ -12,7 +12,8 @@ use crate::config::ClockConfig;
 mod config;
 
 #[no_mangle]
-fn main(socket: UdpSocket) -> Result<()> {
+#[tokio::main(flavor = "current_thread")]
+async fn load(socket: UdpSocket) -> Result<()> {
     let config = ClockConfig::load()?;
 
     loop {

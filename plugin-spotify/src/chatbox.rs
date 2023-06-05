@@ -2,7 +2,7 @@ use std::{net::UdpSocket, sync::Arc, time::Duration};
 
 use anyhow::Result;
 use ferrispot::{
-    client::authorization_code::SyncAuthorizationCodeUserClient,
+    client::authorization_code::AsyncAuthorizationCodeUserClient,
     model::playback::PlayingType,
     prelude::*,
 };
@@ -11,15 +11,16 @@ use terminal_link::Link;
 
 use crate::config::SpotifyConfig;
 
-//noinspection RsRedundantElse
-pub fn thread_chatbox(
+pub async fn task_chatbox(
     socket: Arc<UdpSocket>,
-    spotify: SyncAuthorizationCodeUserClient,
+    spotify: AsyncAuthorizationCodeUserClient,
     config: SpotifyConfig,
 ) -> Result<()> {
     let mut previous_track = String::new();
     loop {
-        let Ok(track) = spotify.currently_playing_item().send_sync() else {
+        std::thread::sleep(Duration::from_secs(config.polling));
+
+        let Ok(track) = spotify.currently_playing_item().send_async().await else {
             continue;
         };
 
@@ -67,7 +68,5 @@ pub fn thread_chatbox(
 
         let msg_buf = rosc::encoder::encode(&packet)?;
         socket.send(&msg_buf)?;
-
-        std::thread::sleep(Duration::from_secs(config.polling));
     }
 }

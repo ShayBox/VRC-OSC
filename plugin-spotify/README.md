@@ -28,15 +28,19 @@ The Spotify plugin requires you to create a Spotify Developer Application
 
 ## Avatar Parameters
 
-This plugin supports the [VRCOSC Media Prefab](https://github.com/VolcanicArts/VRCOSC/releases/latest)  
+This plugin supports the [VRCOSC Media Prefab]  
 Support for additional prefabs are welcome
 
 | Parameter             | Type  |
 |-----------------------|-------|
-| VRCOSC/Media/Play     | None  |
+| VRCOSC/Media/Play     | Bool  |
 | VRCOSC/Media/Next     | None  |
 | VRCOSC/Media/Previous | None  |
 | VRCOSC/Media/Shuffle  | Bool  |
+| VRCOSC/Media/Seeking  | Bool  |
 | VRCOSC/Media/Muted    | Bool  |
 | VRCOSC/Media/Repeat   | Int   |
 | VRCOSC/Media/Volume   | Float |
+| VRCOSC/Media/Position | Float |
+
+[VRCOSC Media Prefab]: https://github.com/VolcanicArts/VRCOSC/releases/latest

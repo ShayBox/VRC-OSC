@@ -11,5 +11,11 @@ crate-type = ["cdylib"]
 
 [dependencies]
 anyhow.workspace = true
-enigo = { git = "https://github.com/Shays-Forks/enigo.git" }
 rosc.workspace = true
+tokio = { workspace = true, features = ["macros", "rt"] }
+
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.48", features = ["Foundation", "Media_Control"] }
+
+[target.'cfg(unix)'.dependencies]
+enigo = { git = "https://github.com/Shays-Forks/enigo.git" }
