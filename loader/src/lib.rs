@@ -12,6 +12,9 @@ use crate::config::LoaderConfig;
 
 pub mod config;
 
+pub const CARGO_PKG_VERSION: &str = env!("CARGO_PKG_VERSION");
+pub const CARGO_PKG_HOMEPAGE: &str = env!("CARGO_PKG_HOMEPAGE");
+
 pub fn get_plugin_names() -> Result<Vec<String>> {
     let current_exe = std::env::current_exe()?;
     let Some(current_dir) = current_exe.parent() else {
@@ -88,4 +91,15 @@ pub fn load_plugins(
     }
 
     Ok(addrs)
+}
+
+pub async fn check_for_updates() -> Result<bool> {
+    let response = reqwest::get(CARGO_PKG_HOMEPAGE).await?;
+    let url = response.url();
+    let path = url.path();
+    let Some(remote_version) = path.split('/').last() else {
+        return Ok(false)
+    };
+
+    Ok(remote_version > CARGO_PKG_VERSION)
 }

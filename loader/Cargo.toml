@@ -4,15 +4,18 @@ description = "Dynamically loaded VRChat OSC plugins written in Rust"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true
+homepage = "https://git.shaybox.com/vrc-osc/releases/latest"
 
 [dependencies]
 anyhow.workspace = true
 dialoguer.workspace = true
-human-panic = "1.1.4"
+human-panic = "1.1"
 libloading = "0.8"
 path-absolutize = "3.1"
+reqwest = "0.11"
 rosc.workspace = true
 serde = { workspace = true, features = ["derive"] }
+terminal-link = "0.1"
 tokio = { version = "1.28", features = ["full"] }
 toml.workspace = true
 walkdir = "2"

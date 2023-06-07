@@ -12,7 +12,7 @@ crate-type = ["cdylib"]
 [dependencies]
 anyhow.workspace = true
 dialoguer.workspace = true
-ferrispot = { git = "https://github.com/Shays-Forks/Ferrispot.git", default-features = false, features = ["async", "rustls-tls"] }
+ferrispot = { git = "https://github.com/Spanfile/Ferrispot.git", default-features = false, features = ["async", "rustls-tls"] }
 rosc.workspace = true
 serde = { workspace = true, features = ["derive"] }
 terminal-link = "0.1"

@@ -2,11 +2,17 @@ use std::net::UdpSocket;
 
 use anyhow::Result;
 use rosc::decoder::MTU;
-use vrc_osc::config::LoaderConfig;
+use terminal_link::Link;
+use vrc_osc::{config::LoaderConfig, CARGO_PKG_HOMEPAGE};
 
 #[tokio::main]
 async fn main() -> Result<()> {
     human_panic::setup_panic!();
+
+    if vrc_osc::check_for_updates().await? {
+        let link = Link::new("An update is available", CARGO_PKG_HOMEPAGE);
+        println!("{link}");
+    }
 
     let loader_config = LoaderConfig::load()?;
     let loader_socket = UdpSocket::bind(&loader_config.bind_addr)?;
