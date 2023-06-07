@@ -2,7 +2,7 @@
 members = ["loader", "plugin-clock", "plugin-control", "plugin-debug", "plugin-lastfm", "plugin-spotify", "plugin-steamvr"]
 
 [workspace.package]
-version = "2.2.1"
+version = "2.2.2"
 authors = ["Shayne Hartford <shaybox@shaybox.com>"]
 edition = "2021"
 readme = "README.md"

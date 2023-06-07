@@ -1,8 +1,12 @@
-use std::{collections::HashMap, ffi::OsStr, net::UdpSocket};
-use std::net::SocketAddr;
+use std::{
+    collections::HashMap,
+    ffi::OsStr,
+    net::{SocketAddr, UdpSocket},
+};
 
 use anyhow::Result;
 use libloading::{Library, Symbol};
+use path_absolutize::Absolutize;
 use walkdir::{DirEntry, WalkDir};
 
 use crate::config::LoaderConfig;
@@ -24,8 +28,13 @@ pub fn get_libraries() -> Result<HashMap<String, Library>> {
 
     let mut libraries = HashMap::new();
     for path in paths {
-        let Some(filename) = path.file_name().and_then(OsStr::to_str) else {
-            continue; // This shouldn't be possible
+        // libloading doesn't support relative paths on Linux
+        let path = path.absolutize()?;
+        let Some(filename) = path.to_str() else {
+            continue; // No file name
+        };
+        let Some(lib_name) = path.file_name().and_then(OsStr::to_str) else {
+            continue; // No file name
         };
 
         let extension = path.extension().and_then(OsStr::to_str);
@@ -38,7 +47,7 @@ pub fn get_libraries() -> Result<HashMap<String, Library>> {
 
         unsafe {
             let library = Library::new(filename)?;
-            libraries.insert(filename.to_string(), library);
+            libraries.insert(lib_name.to_string(), library);
         }
     }
 
