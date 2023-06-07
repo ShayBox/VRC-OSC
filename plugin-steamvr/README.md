@@ -10,4 +10,5 @@
 # SteamVR Plugin
 
 Registers VRC-OSC as a SteamVR overlay for auto-start/stop  
-This plugin is Windows and Linux only because SteamVR doesn't run on macOS
+
+This plugin is Windows and Linux only because SteamVR is not available on macOS

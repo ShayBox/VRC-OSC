@@ -14,22 +14,21 @@ This plugin is Windows and Linux only because macOS doesn't support Media keys
 
 ## Avatar Parameters
 
-This plugin **partially**[^1] supports the [VRCOSC Media Prefab]  
+This plugin **partially**[^1][^2] supports the [VRCOSC Media Prefab]  
 Support for additional prefabs are welcome
 
-| Parameter             | Type     | 🪟 | 🐧 |
-|-----------------------|----------|----|----|
-| VRCOSC/Media/Play     | Bool[^2] | ✅  | ✅  |
-| VRCOSC/Media/Next     | None     | ✅  | ✅  |
-| VRCOSC/Media/Previous | None     | ✅  | ✅  |
-| VRCOSC/Media/Shuffle  | Bool     | ✅  | ❌  |
-| VRCOSC/Media/Seeking  | Bool     | ✅  | ❌  |
-| VRCOSC/Media/Muted    | Bool     | ❌  | ✅  |
-| VRCOSC/Media/Repeat   | Int      | ✅  | ❌  |
-| VRCOSC/Media/Volume   | Float    | ❌  | ❌  |
-| VRCOSC/Media/Position | Float    | ✅  | ❌  |
+| Parameter             | Type     | 🪟    | 🐧    |
+|-----------------------|----------|-------|-------|
+| VRCOSC/Media/Play     | Bool[^2] | ✅     | ✅     |
+| VRCOSC/Media/Next     | None     | ✅     | ✅     |
+| VRCOSC/Media/Previous | None     | ✅     | ✅     |
+| VRCOSC/Media/Shuffle  | Bool     | ✅     | ❌[^2] |
+| VRCOSC/Media/Seeking  | Bool     | ✅     | ❌[^2] |
+| VRCOSC/Media/Muted    | Bool     | ❌[^1] | ✅     |
+| VRCOSC/Media/Repeat   | Int      | ✅     | ❌[^2] |
+| VRCOSC/Media/Volume   | Float    | ❌[^1] | ❌[^2] |
+| VRCOSC/Media/Position | Float    | ✅     | ❌[^2] |
 
-[^1]: The Windows crate doesn't currently support Volume  
-[^2]: Linux support is lacking, issues and pull requests are welcome  
-
+[^1]: The `windows` crate doesn't currently support volume  
+[^2]: Support for Linux is lacking, issues and pull requests are welcome
 [VRCOSC Media Prefab]: https://github.com/VolcanicArts/VRCOSC/releases/latest

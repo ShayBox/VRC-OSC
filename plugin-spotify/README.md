@@ -10,7 +10,7 @@
 # Spotify Plugin
 
 Sends the current song to the chatbox  
-Control playback via avatar prefabs (Spotify Premium)
+Control playback via avatar prefabs[^1]
 
 ## How to Setup
 
@@ -28,7 +28,7 @@ The Spotify plugin requires you to create a Spotify Developer Application
 
 ## Avatar Parameters
 
-This plugin supports the [VRCOSC Media Prefab]  
+This plugin fully supports the [VRCOSC Media Prefab]  
 Support for additional prefabs are welcome
 
 | Parameter             | Type  |
@@ -43,4 +43,5 @@ Support for additional prefabs are welcome
 | VRCOSC/Media/Volume   | Float |
 | VRCOSC/Media/Position | Float |
 
+[^1]: This feature requires Spotify Premium
 [VRCOSC Media Prefab]: https://github.com/VolcanicArts/VRCOSC/releases/latest

@@ -13,7 +13,7 @@ Sends the time to avatar prefabs
 
 ## Avatar Parameters
 
-This plugin supports the [VRCOSC Watch Prefab](https://github.com/VolcanicArts/VRCOSC/releases/latest)  
+This plugin fully supports the [VRCOSC Watch Prefab]  
 Support for additional prefabs are welcome
 
 | Parameter            | Type  |
@@ -21,3 +21,5 @@ Support for additional prefabs are welcome
 | VRCOSC/Clock/Hours   | Float |
 | VRCOSC/Clock/Minutes | Float |
 | VRCOSC/Clock/Seconds | Float |
+
+[VRCOSC Watch Prefab]: https://github.com/VolcanicArts/VRCOSC/releases/latest

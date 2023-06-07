@@ -22,6 +22,6 @@ Dynamically loaded VRChat OSC plugins written in Rust
 
 ## Planned:
 
-- [`plugin-caption`](/plugin-caption): Live captions your speech to the chatbox
+- `plugin-caption`: Live captions your speech to the chatbox
 
-[^1]: Windows and Linux only
+[^1]: These plugins are Windows and Linux only
