@@ -9,13 +9,13 @@ use ferrispot::{
         },
         SpotifyClientBuilder,
     },
-    prelude::AccessTokenRefreshAsync,
+    prelude::*,
     scope::Scope,
 };
 use tiny_http::{Header, Response, Server};
 use url::Url;
 
-use crate::{chatbox::task_chatbox, config::SpotifyConfig, control::task_control};
+use crate::config::SpotifyConfig;
 
 mod chatbox;
 mod config;
@@ -84,8 +84,7 @@ async fn load(socket: UdpSocket) -> Result<()> {
         let user_client = user_client.clone();
 
         tokio::spawn(async move {
-            println!("5");
-            task_control(socket, user_client)
+            control::task(socket, user_client)
                 .await
                 .expect("task_control")
         });
@@ -93,7 +92,7 @@ async fn load(socket: UdpSocket) -> Result<()> {
 
     if config.enable_chatbox {
         tokio::spawn(async move {
-            task_chatbox(socket, user_client, config)
+            chatbox::task(socket, user_client, config)
                 .await
                 .expect("task_chatbox")
         });

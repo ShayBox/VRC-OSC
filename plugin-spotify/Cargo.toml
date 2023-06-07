@@ -12,12 +12,12 @@ crate-type = ["cdylib"]
 [dependencies]
 anyhow.workspace = true
 dialoguer.workspace = true
-ferrispot = "0.4"
+ferrispot = { git = "https://github.com/Shays-Forks/Ferrispot.git", default-features = false, features = ["async", "rustls-tls"] }
 rosc.workspace = true
 serde = { workspace = true, features = ["derive"] }
 terminal-link = "0.1"
 tiny_http = "0.12"
-tokio = { workspace = true, features = ["macros", "rt"] }
+tokio = { workspace = true, features = ["macros", "rt", "time"] }
 toml.workspace = true
 url = "2"
 webbrowser = "0.8"

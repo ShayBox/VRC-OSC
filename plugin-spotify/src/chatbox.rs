@@ -11,7 +11,7 @@ use terminal_link::Link;
 
 use crate::config::SpotifyConfig;
 
-pub async fn task_chatbox(
+pub async fn task(
     socket: Arc<UdpSocket>,
     spotify: AsyncAuthorizationCodeUserClient,
     config: SpotifyConfig,

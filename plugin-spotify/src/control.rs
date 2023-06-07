@@ -8,7 +8,7 @@ use ferrispot::{
 };
 use rosc::{decoder::MTU, OscMessage, OscPacket, OscType};
 
-pub async fn task_control(
+pub async fn task(
     socket: Arc<UdpSocket>,
     spotify: AsyncAuthorizationCodeUserClient,
 ) -> Result<()> {
