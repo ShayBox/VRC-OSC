@@ -1,5 +1,4 @@
 use std::{
-    collections::HashMap,
     ffi::OsStr,
     net::{SocketAddr, UdpSocket},
 };
@@ -13,7 +12,7 @@ use crate::config::LoaderConfig;
 
 pub mod config;
 
-pub fn get_libraries() -> Result<HashMap<String, Library>> {
+pub fn get_plugin_names() -> Result<Vec<String>> {
     let current_exe = std::env::current_exe()?;
     let Some(current_dir) = current_exe.parent() else {
         panic!("This shouldn't be possible");
@@ -26,17 +25,8 @@ pub fn get_libraries() -> Result<HashMap<String, Library>> {
         .map(DirEntry::into_path)
         .collect::<Vec<_>>();
 
-    let mut libraries = HashMap::new();
+    let mut libraries = Vec::new();
     for path in paths {
-        // libloading doesn't support relative paths on Linux
-        let path = path.absolutize()?;
-        let Some(filename) = path.to_str() else {
-            continue; // No file name
-        };
-        let Some(lib_name) = path.file_name().and_then(OsStr::to_str) else {
-            continue; // No file name
-        };
-
         let extension = path.extension().and_then(OsStr::to_str);
         let Some(extension) = extension else {
             continue; // No file extension
@@ -45,24 +35,37 @@ pub fn get_libraries() -> Result<HashMap<String, Library>> {
             continue; // Not a dynamic library
         }
 
-        unsafe {
-            let library = Library::new(filename)?;
-            libraries.insert(lib_name.to_string(), library);
-        }
+        let Some(filename) = path.file_name().and_then(OsStr::to_str) else {
+            continue; // No file name
+        };
+
+        libraries.push(filename.to_owned());
     }
 
     Ok(libraries)
 }
 
 pub fn load_plugins(
-    libraries: HashMap<String, Library>,
+    plugin_names: Vec<String>,
     loader_config: &LoaderConfig,
 ) -> Result<Vec<SocketAddr>> {
+    let current_exe = std::env::current_exe()?;
+    let Some(current_dir) = current_exe.parent() else {
+        panic!("This shouldn't be possible");
+    };
+
     let mut addrs = Vec::new();
-    for (filename, library) in libraries {
+    for filename in plugin_names {
         if !loader_config.enabled.contains(&filename) {
             continue; // Skip disabled libraries
         }
+
+        // libloading doesn't support relative paths on Linux
+        let path = current_dir.join(filename);
+        let path = path.absolutize()?;
+        let Some(filename) = path.to_str() else {
+            continue; // No file name
+        };
 
         let plugin_socket = UdpSocket::bind("127.0.0.1:0")?; // Dynamic port
         let loader_addr = loader_config.bind_addr.replace("0.0.0.0", "127.0.0.1");
@@ -71,7 +74,9 @@ pub fn load_plugins(
         let plugin_addr = plugin_socket.local_addr()?;
         addrs.push(plugin_addr);
 
+        let filename = filename.to_owned();
         tokio::spawn(async move {
+            let library = unsafe { Library::new(filename).expect("Failed to get the library") };
             let load_fn: Symbol<fn(socket: UdpSocket)> = unsafe {
                 library
                     .get(b"load")

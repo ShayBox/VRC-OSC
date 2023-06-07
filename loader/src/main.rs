@@ -8,10 +8,10 @@ use vrc_osc::config::LoaderConfig;
 async fn main() -> Result<()> {
     human_panic::setup_panic!();
 
-    let libraries = vrc_osc::get_libraries()?;
-    let loader_config = LoaderConfig::load(&libraries)?;
+    let loader_config = LoaderConfig::load()?;
     let loader_socket = UdpSocket::bind(&loader_config.bind_addr)?;
-    let plugin_addrs = vrc_osc::load_plugins(libraries, &loader_config)?;
+    let plugin_names = vrc_osc::get_plugin_names()?;
+    let plugin_addrs = vrc_osc::load_plugins(plugin_names, &loader_config)?;
 
     loop {
         let mut buf = [0u8; MTU];

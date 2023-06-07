@@ -1,5 +1,4 @@
 use std::{
-    collections::HashMap,
     fs::File,
     io::{Read, Seek, Write},
     path::PathBuf,
@@ -8,7 +7,6 @@ use std::{
 
 use anyhow::Result;
 use dialoguer::Confirm;
-use libloading::Library;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -36,7 +34,7 @@ impl LoaderConfig {
         Ok(path)
     }
 
-    pub fn load(libraries: &HashMap<String, Library>) -> Result<Self> {
+    pub fn load() -> Result<Self> {
         let path = Self::get_path()?;
         let mut file = File::options()
             .read(true)
@@ -52,7 +50,7 @@ impl LoaderConfig {
             Ok(config) => Ok(config),
             Err(_) => {
                 let mut config = LoaderConfig::default();
-                config.setup_wizard(libraries)?;
+                config.setup_wizard()?;
 
                 let text = toml::to_string_pretty(&config)?;
                 file.write_all(text.as_bytes())?;
@@ -62,8 +60,8 @@ impl LoaderConfig {
         }
     }
 
-    pub fn setup_wizard(&mut self, libraries: &HashMap<String, Library>) -> Result<()> {
-        let mut filenames = libraries.keys().collect::<Vec<_>>();
+    pub fn setup_wizard(&mut self) -> Result<()> {
+        let mut filenames = crate::get_plugin_names()?;
         filenames.sort();
 
         for filename in filenames {
