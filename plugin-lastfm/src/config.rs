@@ -17,7 +17,6 @@ pub struct LastFMConfig {
     pub api_key: String,
     pub username: String,
     pub format: String,
-    pub enable: bool,
     pub send_once: bool,
     pub polling: u64,
 }
@@ -28,7 +27,6 @@ impl Default for LastFMConfig {
             api_key: LASTFM_API_KEY.into(),
             username: LASTFM_USERNAME.into(),
             format: "📻 {song} - {artists}".into(),
-            enable: false,
             send_once: false,
             polling: 10,
         }

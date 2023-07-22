@@ -1,8 +1,17 @@
 [workspace]
-members = ["loader", "plugin-clock", "plugin-control", "plugin-debug", "plugin-lastfm", "plugin-spotify", "plugin-steamvr"]
+resolver = "2"
+members = [
+    "loader",
+    "plugin-clock",
+    "plugin-control",
+    "plugin-debug",
+    "plugin-lastfm",
+    "plugin-spotify",
+    "plugin-steamvr",
+]
 
 [workspace.package]
-version = "2.3.0"
+version = "2.3.1"
 authors = ["Shayne Hartford <shaybox@shaybox.com>"]
 edition = "2021"
 readme = "README.md"
@@ -15,7 +24,7 @@ dialoguer = "0.10"
 rosc = "0.10"
 serde = "1"
 structstruck = "0.4"
-tokio = "1.28"
+tokio = "1"
 toml = "0.7"
 
 # https://github.com/johnthagen/min-sized-rust

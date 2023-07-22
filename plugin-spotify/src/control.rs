@@ -1,4 +1,4 @@
-use std::{collections::HashMap, net::UdpSocket, sync::Arc, time::Instant};
+use std::{collections::HashMap, net::UdpSocket, sync::Arc};
 
 use anyhow::Result;
 use ferrispot::{
@@ -8,12 +8,8 @@ use ferrispot::{
 };
 use rosc::{decoder::MTU, OscMessage, OscPacket, OscType};
 
-pub async fn task(
-    socket: Arc<UdpSocket>,
-    spotify: AsyncAuthorizationCodeUserClient,
-) -> Result<()> {
+pub async fn task(socket: Arc<UdpSocket>, spotify: AsyncAuthorizationCodeUserClient) -> Result<()> {
     let mut muted_volume = None;
-    let mut instant = Instant::now();
     let mut buf = [0u8; MTU];
     loop {
         let size = socket.recv(&mut buf)?;
@@ -30,12 +26,6 @@ pub async fn task(
         let Some(playback_state) = spotify.playback_state().send_async().await? else {
             continue; // No media is currently playing
         };
-
-        let _ = try_sync_media_state_to_vrchat_menu_parameters(&socket, &spotify).await;
-
-        if Instant::now().duration_since(instant).as_secs() < 1 {
-            continue; // Debounce VRChat menu buttons
-        }
 
         if muted_volume.is_none() {
             muted_volume = Some(playback_state.device().volume_percent());
@@ -54,7 +44,7 @@ pub async fn task(
                 }
             }
             "Next" => spotify.next(),
-            "Previous" => spotify.previous(),
+            "Prev" | "Previous" => spotify.previous(),
             "Shuffle" => {
                 let OscType::Bool(shuffle) = arg.to_owned() else {
                     continue;
@@ -110,12 +100,13 @@ pub async fn task(
 
                 spotify.seek(playback_position)
             }
-            _ => continue,
+            _ => {
+                let _ = try_sync_media_state_to_vrchat_menu_parameters(&socket, &spotify).await;
+                continue;
+            }
         }
         .send_async()
         .await?;
-
-        instant = Instant::now();
     }
 }
 

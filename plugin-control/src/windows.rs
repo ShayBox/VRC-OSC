@@ -1,4 +1,4 @@
-use std::{collections::HashMap, net::UdpSocket, time::Instant};
+use std::{collections::HashMap, net::UdpSocket};
 
 use anyhow::Result;
 use rosc::{decoder::MTU, OscMessage, OscPacket, OscType};
@@ -14,7 +14,6 @@ use windows::Media::{
 #[tokio::main(flavor = "current_thread")]
 pub async fn load(socket: UdpSocket) -> Result<()> {
     let manager = GSMTCSM::RequestAsync()?.await?;
-    let mut instant = Instant::now();
     let mut buf = [0u8; MTU];
     loop {
         let size = socket.recv(&mut buf)?;
@@ -31,12 +30,6 @@ pub async fn load(socket: UdpSocket) -> Result<()> {
         let Ok(session) = manager.GetCurrentSession() else {
             continue; // No media is currently playing
         };
-
-        let _ = try_sync_media_state_to_vrchat_menu_parameters(&socket, &session);
-
-        if Instant::now().duration_since(instant).as_millis() < 100 {
-            continue; // Debounce VRChat menu buttons
-        }
 
         match addr.as_ref() {
             "Play" => {
@@ -85,11 +78,12 @@ pub async fn load(socket: UdpSocket) -> Result<()> {
 
                 session.TryChangePlaybackPositionAsync(playback_position)
             }
-            _ => continue,
+            _ => {
+                let _ = try_sync_media_state_to_vrchat_menu_parameters(&socket, &session);
+                continue;
+            }
         }?
         .await?;
-
-        instant = Instant::now();
     }
 }
 
