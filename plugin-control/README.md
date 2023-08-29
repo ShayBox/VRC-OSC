@@ -31,4 +31,5 @@ Support for additional prefabs are welcome
 
 [^1]: The `windows` crate doesn't currently support volume  
 [^2]: Support for Linux is lacking, issues and pull requests are welcome
+
 [VRCOSC Media Prefab]: https://github.com/VolcanicArts/VRCOSC/releases/latest

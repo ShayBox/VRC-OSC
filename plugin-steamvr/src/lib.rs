@@ -10,19 +10,19 @@ mod manifest;
 #[no_mangle]
 #[tokio::main(flavor = "current_thread")]
 async fn load(_socket: UdpSocket) -> Result<()> {
-    let config = SteamVRConfig::load()?;
-    let manifest = OVRManifest::load()?;
-    let path = OVRManifest::get_path()?;
+    if let Ok(context) = ovr_overlay::Context::init() {
+        let manager = &mut context.applications_mngr();
+        let config = SteamVRConfig::load()?;
+        let manifest = OVRManifest::load()?;
+        let path = OVRManifest::get_path()?;
 
-    let context = ovr_overlay::Context::init()?;
-    let mngr = &mut context.applications_mngr();
+        if manager.is_application_installed(&manifest.applications[0].app_key)? {
+            manager.remove_application_manifest(&path)?;
+        }
 
-    if mngr.is_application_installed(&manifest.applications[0].app_key)? {
-        mngr.remove_application_manifest(&path)?;
-    }
-
-    if config.register {
-        mngr.add_application_manifest(&path, false)?;
+        if config.register {
+            manager.add_application_manifest(&path, false)?;
+        }
     }
 
     Ok(())
