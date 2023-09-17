@@ -19,22 +19,22 @@ jobs:
           - name: Linux-x86_64
             target: x86_64-unknown-linux-gnu
             runner: ubuntu-latest
-            zip: vrc-osc,libclock.so,libdebug.so,liblastfm.so,libspotify.so,libsteamvr.so
+            zip: vrc-osc,libclock.so,libcontrol.so,libdebug.so,liblastfm.so,libspotify.so,libsteamvr.so
 
           - name: macOS-Apple
             target: aarch64-apple-darwin
             runner: macos-latest
-            zip: vrc-osc,libclock.dylib,libdebug.dylib,liblastfm.dylib,libspotify.dylib
+            zip: vrc-osc,libclock.dylib,libcontrol.dylib,libdebug.dylib,liblastfm.dylib,libspotify.dylib
 
           - name: macOS-Intel
             target: x86_64-apple-darwin
             runner: macos-latest
-            zip: vrc-osc,libclock.dylib,libdebug.dylib,liblastfm.dylib,libspotify.dylib
+            zip: vrc-osc,libclock.dylib,libcontrol.dylib,libdebug.dylib,liblastfm.dylib,libspotify.dylib
 
           - name: Windows
             target: x86_64-pc-windows-msvc
             runner: windows-latest
-            zip: vrc-osc.exe,clock.dll,debug.dll,lastfm.dll,spotify.dll,steamvr.dll
+            zip: vrc-osc.exe,clock.dll,control.dll,debug.dll,lastfm.dll,spotify.dll,steamvr.dll
 
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.runner }}
