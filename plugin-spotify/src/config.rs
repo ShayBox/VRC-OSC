@@ -24,6 +24,7 @@ pub struct SpotifyConfig {
     pub enable_control: bool,
     pub pkce: bool,
     pub send_once: bool,
+    pub send_lyrics: bool,
     pub polling: u64,
 }
 
@@ -34,12 +35,13 @@ impl Default for SpotifyConfig {
             client_secret: SPOTIFY_SECRET.into(),
             redirect_uri: SPOTIFY_CALLBACK.into(),
             format: "📻 {song} - {artists}".into(),
-            refresh_token: "".into(),
+            refresh_token: String::new(),
             enable_chatbox: false,
             enable_control: false,
             pkce: false,
-            send_once: false,
-            polling: 10,
+            send_once: true,
+            send_lyrics: true,
+            polling: 1,
         }
     }
 }
@@ -80,14 +82,11 @@ impl SpotifyConfig {
     }
 
     pub fn setup_wizard(&mut self) -> Result<()> {
-        let mut confirm = Confirm::new();
-        let mut input = Input::new();
-
         let prompt = "Would you like to enable Spotify Chatbox?";
-        self.enable_chatbox = confirm.with_prompt(prompt).interact()?;
+        self.enable_chatbox = Confirm::new().with_prompt(prompt).interact()?;
 
         let prompt = "Would you like to enable Spotify Controls? (Requires Spotify Premium)";
-        self.enable_control = confirm.with_prompt(prompt).interact()?;
+        self.enable_control = Confirm::new().with_prompt(prompt).interact()?;
 
         if self.enable_chatbox || self.enable_control {
             println!("The Spotify plugin requires you to create a Spotify Developer Application");
@@ -95,19 +94,19 @@ impl SpotifyConfig {
             println!("https://developer.spotify.com/dashboard");
 
             let prompt = "Spotify Client ID: ";
-            self.client_id = input
+            self.client_id = Input::new()
                 .with_prompt(prompt)
                 .default(self.client_id.to_owned())
                 .interact_text()?;
 
             let prompt = "Spotify Client secret: ";
-            self.client_secret = input
+            self.client_secret = Input::new()
                 .with_prompt(prompt)
                 .default(self.client_secret.to_owned())
                 .interact_text()?;
 
             let prompt = "Spotify Redirect URI: ";
-            self.redirect_uri = input
+            self.redirect_uri = Input::new()
                 .with_prompt(prompt)
                 .default(self.redirect_uri.to_owned())
                 .interact_text()?;

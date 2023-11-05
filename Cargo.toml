@@ -11,7 +11,7 @@ members = [
 ]
 
 [workspace.package]
-version = "2.3.3"
+version = "2.4.0"
 authors = ["Shayne Hartford <shaybox@shaybox.com>"]
 edition = "2021"
 readme = "README.md"
@@ -20,12 +20,12 @@ license = "MIT"
 
 [workspace.dependencies]
 anyhow = "1"
-dialoguer = "0.10"
+dialoguer = "0.11"
 rosc = "0.10"
 serde = "1"
 structstruck = "0.4"
 tokio = "1"
-toml = "0.7"
+toml = "0.8"
 
 # https://github.com/johnthagen/min-sized-rust
 [profile.release]

@@ -18,4 +18,4 @@ tokio = { workspace = true, features = ["macros", "rt"] }
 windows = { version = "0.51", features = ["Foundation", "Media_Control"] }
 
 [target.'cfg(unix)'.dependencies]
-enigo = { git = "https://github.com/Shays-Forks/enigo.git" }
+enigo = "0.1"

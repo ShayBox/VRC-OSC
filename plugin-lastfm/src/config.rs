@@ -69,7 +69,7 @@ impl LastFMConfig {
     }
 
     pub fn setup_wizard(&mut self) -> Result<()> {
-        let mut input = Input::new();
+        let input = Input::new();
 
         println!("The LastFM plugin requires you to setup a scrobbler app or service");
         println!("https://www.last.fm/about/trackmymusic");

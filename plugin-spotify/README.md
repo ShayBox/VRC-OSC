@@ -9,7 +9,7 @@
 
 # Spotify Plugin
 
-Sends the current song to the chatbox  
+Sends the current song and lyrics to the chatbox  
 Control playback via avatar prefabs[^1]
 
 ## How to Setup
@@ -32,7 +32,7 @@ This plugin fully supports the [VRCOSC Media Prefab]
 Support for additional prefabs are welcome
 
 | Parameter             | Type  |
-|-----------------------|-------|
+| --------------------- | ----- |
 | VRCOSC/Media/Play     | Bool  |
 | VRCOSC/Media/Next     | None  |
 | VRCOSC/Media/Previous | None  |
