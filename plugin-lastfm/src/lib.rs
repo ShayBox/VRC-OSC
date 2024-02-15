@@ -1,18 +1,65 @@
 use std::{net::UdpSocket, time::Duration};
 
 use anyhow::Result;
+use derive_config::DeriveTomlConfig;
+#[cfg(debug_assertions)]
+use dotenvy_macro::dotenv;
+use inquire::Text;
 use rosc::{OscMessage, OscPacket, OscType};
+use serde::{Deserialize, Serialize};
 use terminal_link::Link;
 
-use crate::{config::LastFMConfig, model::LastFM};
+use crate::model::LastFM;
 
-mod config;
 mod model;
 
+#[cfg(debug_assertions)]
+const LASTFM_API_KEY: &str = dotenv!("LASTFM_API_KEY");
+#[cfg(debug_assertions)]
+const LASTFM_USERNAME: &str = dotenv!("LASTFM_USERNAME");
+
+#[cfg(not(debug_assertions))]
+const LASTFM_API_KEY: &str = env!("LASTFM_API_KEY");
+#[cfg(not(debug_assertions))]
+const LASTFM_USERNAME: &str = env!("LASTFM_USERNAME");
+
+#[derive(Clone, Debug, DeriveTomlConfig, Deserialize, Serialize)]
+pub struct Config {
+    pub api_key:   String,
+    pub username:  String,
+    pub format:    String,
+    pub send_once: bool,
+    pub polling:   u64,
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Self {
+            api_key:   LASTFM_API_KEY.into(),
+            username:  LASTFM_USERNAME.into(),
+            format:    "📻 {song} - {artists}".into(),
+            send_once: false,
+            polling:   10,
+        }
+    }
+}
+
 #[no_mangle]
+#[allow(clippy::needless_pass_by_value)]
 #[tokio::main(flavor = "current_thread")]
-async fn load(socket: UdpSocket) -> Result<()> {
-    let config = LastFMConfig::load()?;
+async extern "Rust" fn load(socket: UdpSocket) -> Result<()> {
+    let config = if let Ok(config) = Config::load() {
+        config
+    } else {
+        println!("The LastFM plugin requires you to setup a scrobbler app or service");
+        println!("https://www.last.fm/about/trackmymusic");
+
+        Config {
+            username: Text::new("LastFM Username: ").prompt()?,
+            ..Default::default()
+        }
+    };
+
     let mut previous_track = String::new();
     loop {
         std::thread::sleep(Duration::from_secs(config.polling));
@@ -24,13 +71,7 @@ async fn load(socket: UdpSocket) -> Result<()> {
             .recent
             .tracks
             .iter()
-            .filter(|track| {
-                if let Some(attr) = &track.attr {
-                    attr.nowplaying
-                } else {
-                    false
-                }
-            })
+            .filter(|track| track.attr.as_ref().map_or(false, |attr| attr.nowplaying))
             .collect::<Vec<_>>();
 
         let Some(track) = tracks.first() else {
@@ -43,7 +84,7 @@ async fn load(socket: UdpSocket) -> Result<()> {
             .replace("{artists}", &track.artist.text);
 
         if track.name != previous_track {
-            previous_track = track.name.to_owned();
+            previous_track = track.name.clone();
             let link = Link::new(text, &track.url);
             println!("{link}");
         } else if config.send_once {

@@ -4,18 +4,18 @@ use anyhow::Result;
 use ferrispot::{
     client::authorization_code::AsyncAuthorizationCodeUserClient,
     model::playback::PlayingType,
-    prelude::*,
+    prelude::{CommonArtistInformation, *},
 };
 use rosc::{OscMessage, OscPacket, OscType};
 use spotify_lyrics::{Browser, SpotifyLyrics};
 use terminal_link::Link;
 
-use crate::config::SpotifyConfig;
+use crate::Config;
 
 pub async fn task(
     socket: Arc<UdpSocket>,
     spotify: AsyncAuthorizationCodeUserClient,
-    mut config: SpotifyConfig,
+    mut config: Config,
 ) -> Result<()> {
     let mut previous_lyrics = None;
     let mut previous_track = String::new();
@@ -52,7 +52,7 @@ pub async fn task(
         let artists = full_track
             .artists()
             .iter()
-            .map(|artist| artist.name())
+            .map(CommonArtistInformation::name)
             .collect::<Vec<_>>()
             .join(", ");
 
@@ -80,29 +80,27 @@ pub async fn task(
                 continue;
             };
 
+            #[allow(clippy::cast_possible_truncation)]
             let Some(current_words) = color_lyrics
                 .lyrics
                 .lines
                 .iter()
                 .rev()
                 .find(|line| line.start_time_ms < item.progress().as_millis() as u64)
-                .map(|line| line.words.to_owned())
+                .map(|line| line.words.clone())
             else {
                 continue;
             };
 
             if current_words == previous_words {
                 continue;
-            };
+            }
 
             previous_words = current_words;
 
             let message = OscMessage {
                 addr: "/chatbox/input".into(),
-                args: vec![
-                    OscType::String(previous_words.to_owned()),
-                    OscType::Bool(true),
-                ],
+                args: vec![OscType::String(previous_words.clone()), OscType::Bool(true)],
             };
 
             let packet = OscPacket::Message(message);

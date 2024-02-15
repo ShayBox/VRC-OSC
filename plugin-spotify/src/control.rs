@@ -87,6 +87,7 @@ pub async fn task(socket: Arc<UdpSocket>, spotify: AsyncAuthorizationCodeUserCli
                     continue;
                 };
 
+                #[allow(clippy::cast_sign_loss, clippy::cast_possible_truncation)]
                 spotify.volume((volume * 100.0) as u8)
             }
             "Position" => {
@@ -96,12 +97,12 @@ pub async fn task(socket: Arc<UdpSocket>, spotify: AsyncAuthorizationCodeUserCli
 
                 let min = 0;
                 let max = playback_state.currently_playing_item().timestamp();
-                let playback_position = (min + (max - min) * (position * 100.0) as u64) / 100;
 
-                spotify.seek(playback_position)
+                #[allow(clippy::cast_sign_loss, clippy::cast_possible_truncation)]
+                spotify.seek((min + (max - min) * (position * 100.0) as u64) / 100)
             }
             _ => {
-                let _ = try_sync_media_state_to_vrchat_menu_parameters(&socket, &spotify).await;
+                let _ = try_sync_media_state(&socket, &spotify).await;
                 continue;
             }
         }
@@ -110,8 +111,8 @@ pub async fn task(socket: Arc<UdpSocket>, spotify: AsyncAuthorizationCodeUserCli
     }
 }
 
-/// Try to synchronize the media session state to the VRChat menu parameters
-async fn try_sync_media_state_to_vrchat_menu_parameters(
+/// Try to synchronize the media session state to the `VRChat` menu parameters
+async fn try_sync_media_state(
     socket: &UdpSocket,
     spotify: &AsyncAuthorizationCodeUserClient,
 ) -> Result<()> {

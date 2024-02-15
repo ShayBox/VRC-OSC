@@ -1,20 +1,33 @@
 use std::net::UdpSocket;
 
 use anyhow::Result;
+use derive_config::DeriveTomlConfig;
+use serde::{Deserialize, Serialize};
 
-use crate::{config::SteamVRConfig, manifest::OVRManifest};
+use crate::openvr::Manifest;
 
-mod config;
-mod manifest;
+mod openvr;
+
+#[derive(Clone, Debug, DeriveTomlConfig, Deserialize, Serialize)]
+pub struct Config {
+    pub register: bool,
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Self { register: true }
+    }
+}
 
 #[no_mangle]
+#[allow(clippy::needless_pass_by_value)]
 #[tokio::main(flavor = "current_thread")]
-async fn load(_socket: UdpSocket) -> Result<()> {
+async extern "Rust" fn load(_socket: UdpSocket) -> Result<()> {
     if let Ok(context) = ovr_overlay::Context::init() {
         let manager = &mut context.applications_mngr();
-        let config = SteamVRConfig::load()?;
-        let manifest = OVRManifest::load()?;
-        let path = OVRManifest::get_path()?;
+        let config = Config::load()?;
+        let manifest = Manifest::load()?;
+        let path = Manifest::get_path()?;
 
         if manager.is_application_installed(&manifest.applications[0].app_key)? {
             manager.remove_application_manifest(&path)?;

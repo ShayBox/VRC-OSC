@@ -11,7 +11,12 @@ crate-type = ["cdylib"]
 
 [dependencies]
 anyhow.workspace = true
+derive-config = { workspace = true, default-features = false, features = ["toml"] }
 rosc.workspace = true
 serde = { workspace = true, features = ["derive"] }
 tokio = { workspace = true, features = ["macros", "rt"] }
 toml.workspace = true
+
+[lints.clippy]
+pedantic = "warn"
+nursery = "warn"

@@ -11,7 +11,7 @@ members = [
 ]
 
 [workspace.package]
-version = "2.4.0"
+version = "2.5.0"
 authors = ["Shayne Hartford <shaybox@shaybox.com>"]
 edition = "2021"
 readme = "README.md"
@@ -20,7 +20,9 @@ license = "MIT"
 
 [workspace.dependencies]
 anyhow = "1"
-dialoguer = "0.11"
+derive-config = "2"
+dotenvy_macro = "0.15"
+inquire = "0.6"
 rosc = "0.10"
 serde = "1"
 structstruck = "0.4"

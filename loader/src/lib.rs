@@ -3,23 +3,39 @@ use std::{
     net::{SocketAddr, UdpSocket},
 };
 
-use anyhow::Result;
+use anyhow::{Context, Result};
+use derive_config::DeriveTomlConfig;
 use libloading::{Library, Symbol};
 use path_absolutize::Absolutize;
+use serde::{Deserialize, Serialize};
 use walkdir::{DirEntry, WalkDir};
-
-use crate::config::LoaderConfig;
-
-pub mod config;
 
 pub const CARGO_PKG_VERSION: &str = env!("CARGO_PKG_VERSION");
 pub const CARGO_PKG_HOMEPAGE: &str = env!("CARGO_PKG_HOMEPAGE");
 
+#[derive(Clone, Debug, DeriveTomlConfig, Deserialize, Serialize)]
+pub struct Config {
+    pub enabled:   Vec<String>,
+    pub bind_addr: String,
+    pub send_addr: String,
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Self {
+            enabled:   Vec::default(),
+            bind_addr: "0.0.0.0:9001".into(),
+            send_addr: "127.0.0.1:9000".into(),
+        }
+    }
+}
+
+/// # Errors
+///
+/// Will return `Err` if couldn't get the current exe or dir path
 pub fn get_plugin_names() -> Result<Vec<String>> {
     let current_exe = std::env::current_exe()?;
-    let Some(current_dir) = current_exe.parent() else {
-        panic!("This shouldn't be possible");
-    };
+    let current_dir = current_exe.parent().context("This shouldn't be possible")?;
 
     let paths = WalkDir::new(current_dir)
         .max_depth(1)
@@ -48,14 +64,16 @@ pub fn get_plugin_names() -> Result<Vec<String>> {
     Ok(libraries)
 }
 
-pub fn load_plugins(
-    plugin_names: Vec<String>,
-    loader_config: &LoaderConfig,
-) -> Result<Vec<SocketAddr>> {
+/// # Errors
+///
+/// Will return `Err` if couldn't get the current exe or dir path
+///
+/// # Panics
+///
+/// Will panic if a plugin fails to load
+pub fn load_plugins(plugin_names: Vec<String>, loader_config: &Config) -> Result<Vec<SocketAddr>> {
     let current_exe = std::env::current_exe()?;
-    let Some(current_dir) = current_exe.parent() else {
-        panic!("This shouldn't be possible");
-    };
+    let current_dir = current_exe.parent().context("This shouldn't be possible")?;
 
     let mut addrs = Vec::new();
     for filename in plugin_names {
@@ -93,12 +111,15 @@ pub fn load_plugins(
     Ok(addrs)
 }
 
+/// # Errors
+///
+/// Will return `Err` if couldn't get the GitHub repository
 pub async fn check_for_updates() -> Result<bool> {
     let response = reqwest::get(CARGO_PKG_HOMEPAGE).await?;
     let url = response.url();
     let path = url.path();
     let Some(remote_version) = path.split('/').last() else {
-        return Ok(false)
+        return Ok(false);
     };
 
     Ok(remote_version > CARGO_PKG_VERSION)

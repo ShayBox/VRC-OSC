@@ -10,11 +10,16 @@ use windows::Media::{
     MediaPlaybackAutoRepeatMode,
 };
 
+/// # Errors
+///
+/// # Panics
 #[no_mangle]
+#[allow(clippy::needless_pass_by_value)]
 #[tokio::main(flavor = "current_thread")]
-pub async fn load(socket: UdpSocket) -> Result<()> {
+pub async extern "Rust" fn load(socket: UdpSocket) -> Result<()> {
     let manager = GSMTCSM::RequestAsync()?.await?;
     let mut buf = [0u8; MTU];
+
     loop {
         let size = socket.recv(&mut buf)?;
         let (_buf, packet) = rosc::decoder::decode_udp(&buf[..size])?;
@@ -74,12 +79,13 @@ pub async fn load(socket: UdpSocket) -> Result<()> {
                 let timeline = session.GetTimelineProperties()?;
                 let min = timeline.MinSeekTime()?.Duration;
                 let max = timeline.MaxSeekTime()?.Duration;
-                let playback_position = (min + (max - min) * (position * 100.0) as i64) / 100;
 
+                #[allow(clippy::cast_possible_truncation)]
+                let playback_position = (min + (max - min) * (position * 100.0) as i64) / 100;
                 session.TryChangePlaybackPositionAsync(playback_position)
             }
             _ => {
-                let _ = try_sync_media_state_to_vrchat_menu_parameters(&socket, &session);
+                let _ = try_sync_media_state(&socket, &session);
                 continue;
             }
         }?
@@ -87,8 +93,8 @@ pub async fn load(socket: UdpSocket) -> Result<()> {
     }
 }
 
-/// Try to synchronize the media session state to the VRChat menu parameters
-fn try_sync_media_state_to_vrchat_menu_parameters(
+/// Try to synchronize the media session state to the `VRChat` menu parameters
+fn try_sync_media_state(
     socket: &UdpSocket,
     session: &GlobalSystemMediaTransportControlsSession,
 ) -> Result<()> {
