@@ -13,6 +13,7 @@ Dynamically loaded VRChat OSC plugins written in Rust
 
 ## Plugins:
 
+- [`plugin-chatbox`](/plugin-chatbox): Sends messages to the chatbox
 - [`plugin-clock`](/plugin-clock): Sends the time to avatar prefabs
 - [`plugin-control`](/plugin-control): Control media playback via avatar parameters[^1]
 - [`plugin-debug`](/plugin-debug): Log received OSC packets for debugging

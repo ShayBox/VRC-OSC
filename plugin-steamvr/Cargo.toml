@@ -11,10 +11,10 @@ crate-type = ["cdylib"]
 
 [dependencies]
 anyhow.workspace = true
-derive-config = { workspace = true, default-features = false, features = ["toml"] }
-ovr_overlay = { git = "https://github.com/Shays-Forks/ovr_overlay.git", features = ["ovr_applications"] }
+derive-config = { workspace = true, features = ["toml"] }
+ovr_overlay = { workspace = true, features = ["ovr_applications"] }
 serde = { workspace = true, features = ["derive"] }
-serde_json = "1"
+serde_json.workspace = true
 structstruck.workspace = true
 tokio = { workspace = true, features = ["macros", "rt"] }
 toml.workspace = true

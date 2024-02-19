@@ -7,26 +7,25 @@ edition.workspace = true
 
 [lib]
 name = "spotify"
+path = "lib.rs"
 crate-type = ["cdylib"]
 
 [dependencies]
 anyhow.workspace = true
-derive-config = { workspace = true, default-features = false, features = ["toml"] }
+async-ffi = { workspace = true, features = ["macros"] }
+derive-config = { workspace = true, features = ["toml"] }
 dotenvy_macro.workspace = true
-ferrispot = { git = "https://github.com/Spanfile/Ferrispot.git", default-features = false, features = [
-    "async",
-    "rustls-tls",
-] }
+ferrispot = { workspace = true, features = ["async", "rustls-tls"] }
 inquire.workspace = true
 rosc.workspace = true
 serde = { workspace = true, features = ["derive"] }
-spotify-lyrics = "0.0.5"
-terminal-link = "0.1"
-tiny_http = "0.12"
+spotify-lyrics.workspace = true
+terminal-link.workspace = true
+tiny_http.workspace = true
 tokio = { workspace = true, features = ["macros", "rt", "time"] }
 toml.workspace = true
-url = "2"
-webbrowser = "0.8"
+url.workspace = true
+webbrowser.workspace = true
 
 [lints.clippy]
 pedantic = "warn"

@@ -1,22 +1,24 @@
 [package]
-name = "plugin-clock"
-description = "Sends the time to avatar prefabs"
+name = "plugin-chatbox"
+description = "Sends messages to the chatbox"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true
 
 [lib]
-name = "clock"
+name = "chatbox"
 path = "lib.rs"
 crate-type = ["cdylib"]
 
 [dependencies]
 anyhow.workspace = true
+async-ffi = { workspace = true, features = ["macros"] }
 derive-config = { workspace = true, features = ["toml"] }
 rosc.workspace = true
 serde = { workspace = true, features = ["derive"] }
 tokio = { workspace = true, features = ["macros", "rt"] }
 toml.workspace = true
+vrc-osc.workspace = true
 
 [lints.clippy]
 pedantic = "warn"

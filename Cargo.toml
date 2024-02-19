@@ -2,6 +2,7 @@
 resolver = "2"
 members = [
     "loader",
+    "plugin-chatbox",
     "plugin-clock",
     "plugin-control",
     "plugin-debug",
@@ -11,7 +12,7 @@ members = [
 ]
 
 [workspace.package]
-version = "2.5.0"
+version = "2.6.0"
 authors = ["Shayne Hartford <shaybox@shaybox.com>"]
 edition = "2021"
 readme = "README.md"
@@ -20,14 +21,32 @@ license = "MIT"
 
 [workspace.dependencies]
 anyhow = "1"
-derive-config = "2"
+async-ffi = "0.5"
+derive-config = { version = "2", default-features = false }
 dotenvy_macro = "0.15"
+enigo = "0.1"
+ferrispot = { git = "https://github.com/Shays-Forks/Ferrispot.git", default-features = false }
+human-panic = "1"
 inquire = "0.6"
+libloading = "0.8"
+ovr_overlay = { git = "https://github.com/Shays-Forks/ovr_overlay.git" }
+path-absolutize = "3"
 rosc = "0.10"
 serde = "1"
+serde_json = "1"
+spotify-lyrics = "0.0.6"
 structstruck = "0.4"
+terminal-link = "0.1"
+tiny_http = "0.12"
 tokio = "1"
 toml = "0.8"
+ureq = "2"
+url = "2"
+vrc-osc = { path = "loader" }
+walkdir = "2"
+webbrowser = "0.8"
+windows = "0.52"
+winres = "0.1"
 
 # https://github.com/johnthagen/min-sized-rust
 [profile.release]

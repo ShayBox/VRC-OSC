@@ -6,23 +6,32 @@ authors.workspace = true
 edition.workspace = true
 homepage = "https://git.shaybox.com/vrc-osc/releases/latest"
 
+[lib]
+name = "loader"
+path = "lib.rs"
+
+[[bin]]
+name = "vrc-osc"
+path = "main.rs"
+
 [dependencies]
 anyhow.workspace = true
-derive-config = { workspace = true, default-features = false, features = ["toml"] }
-human-panic = "1"
+async-ffi = { workspace = true, features = ["macros"] }
+derive-config = { workspace = true, features = ["toml"] }
+human-panic.workspace = true
 inquire.workspace = true
-libloading = "0.8"
-path-absolutize = "3"
-reqwest = "0.11"
+libloading.workspace = true
+path-absolutize.workspace = true
 rosc.workspace = true
 serde = { workspace = true, features = ["derive"] }
-terminal-link = "0.1"
-tokio = { version = "1", features = ["full"] }
+terminal-link.workspace = true
+tokio = { workspace = true, features = ["full"] }
 toml.workspace = true
-walkdir = "2"
+ureq.workspace = true
+walkdir.workspace = true
 
 [build-dependencies]
-winres = "0.1"
+winres.workspace = true
 
 [lints.clippy]
 pedantic = "warn"

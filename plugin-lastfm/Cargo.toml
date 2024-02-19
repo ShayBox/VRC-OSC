@@ -11,17 +11,18 @@ crate-type = ["cdylib"]
 
 [dependencies]
 anyhow.workspace = true
-derive-config = { workspace = true, default-features = false, features = ["toml"] }
+async-ffi = { workspace = true, features = ["macros"] }
+derive-config = { workspace = true, features = ["toml"] }
 dotenvy_macro.workspace = true
 inquire.workspace = true
-reqwest = { version = "0.11", default-features = false, features = ["rustls-tls", "json"] }
-rosc.workspace = true
 serde = { workspace = true, features = ["derive"] }
 serde-this-or-that = "0.4"
 structstruck.workspace = true
-terminal-link = "0.1"
+terminal-link.workspace = true
 tokio = { workspace = true, features = ["macros", "rt"] }
 toml.workspace = true
+ureq = { workspace = true, features = ["json"] }
+vrc-osc.workspace = true
 
 [lints.clippy]
 pedantic = "warn"

@@ -15,10 +15,10 @@ rosc.workspace = true
 tokio = { workspace = true, features = ["macros", "rt"] }
 
 [target.'cfg(windows)'.dependencies]
-windows = { version = "0.52", features = ["Foundation", "Media_Control"] }
+windows = { workspace = true, features = ["Foundation", "Media_Control"] }
 
 [target.'cfg(unix)'.dependencies]
-enigo = "0.1"
+enigo.workspace = true
 
 [lints.clippy]
 pedantic = "warn"
