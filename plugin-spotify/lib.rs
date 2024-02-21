@@ -1,7 +1,7 @@
 #![feature(once_cell_try)]
 #![feature(try_find)]
 
-use std::{collections::HashMap, net::UdpSocket, sync::OnceLock};
+use std::{collections::HashMap, net::UdpSocket, sync::OnceLock, time::Duration};
 
 use anyhow::{bail, Context, Result};
 use async_ffi::async_ffi;
@@ -23,7 +23,7 @@ use ferrispot::{
     prelude::*,
     scope::Scope,
 };
-use inquire::Text;
+use inquire::{Confirm, Text};
 use rosc::{decoder::MTU, OscMessage, OscPacket, OscType};
 use serde::{Deserialize, Serialize};
 use spotify_lyrics::{Browser, SpotifyLyrics};
@@ -49,29 +49,31 @@ const SPOTIFY_CALLBACK: &str = env!("SPOTIFY_CALLBACK");
 #[allow(clippy::struct_excessive_bools)]
 #[derive(Clone, Debug, DeriveTomlConfig, Deserialize, Serialize)]
 pub struct Config {
-    pub client:        String,
-    pub secret:        String,
-    pub redirect_uri:  String,
-    pub format:        String,
-    pub refresh_token: String,
-    pub pkce:          bool,
-    pub send_once:     bool,
-    pub send_lyrics:   bool,
-    pub polling:       u64,
+    pub client:         String,
+    pub format:         String,
+    pub redirect_uri:   String,
+    pub refresh_token:  String,
+    pub secret:         String,
+    pub enable_control: bool,
+    pub enable_lyrics:  bool,
+    pub pkce:           bool,
+    pub send_once:      bool,
+    pub polling:        u64,
 }
 
 impl Default for Config {
     fn default() -> Self {
         Self {
-            client:        SPOTIFY_CLIENT.into(),
-            secret:        SPOTIFY_SECRET.into(),
-            redirect_uri:  SPOTIFY_CALLBACK.into(),
-            format:        "📻 {song} - {artists}".into(),
-            refresh_token: String::new(),
-            pkce:          false,
-            send_once:     true,
-            send_lyrics:   true,
-            polling:       1,
+            client:         SPOTIFY_CLIENT.into(),
+            secret:         SPOTIFY_SECRET.into(),
+            redirect_uri:   SPOTIFY_CALLBACK.into(),
+            format:         "📻 {song} - {artists}".into(),
+            refresh_token:  String::new(),
+            enable_control: false,
+            enable_lyrics:  true,
+            pkce:           false,
+            send_once:      true,
+            polling:        1,
         }
     }
 }
@@ -88,6 +90,15 @@ fn config() -> Result<&'static Config> {
             println!("https://developer.spotify.com/dashboard");
 
             let mut config = Config::default();
+
+            config.enable_control =
+                Confirm::new("Would you like to enable Spotify Controls? (Spotify Premium)")
+                    .with_default(config.enable_control)
+                    .prompt()?;
+
+            config.enable_lyrics = Confirm::new("Would you like to enable Spotify Lyrics?")
+                .with_default(config.enable_lyrics)
+                .prompt()?;
 
             config.client = Text::new("Spotify Client ID: ")
                 .with_default(&config.client)
@@ -119,8 +130,8 @@ async extern "Rust" fn chat(
 ) -> Result<(String, String)> {
     let _enter = handle.enter();
     let config = config()?;
-    let spotify = SPOTIFY.get().context("Authenticating...")?;
-    let mut lyrics = LYRICS.get().context("Authenticating...")?.clone();
+    let spotify = SPOTIFY.get().context("Spotify is Authenticating...")?;
+    let mut lyrics = LYRICS.get().context("Lyrics is Authenticating...")?.clone();
 
     let current_item = spotify
         .currently_playing_item()
@@ -133,7 +144,7 @@ async extern "Rust" fn chat(
         bail!("None")
     };
 
-    if config.send_lyrics {
+    if config.enable_lyrics {
         if let Ok(color_lyrics) = lyrics.get_color_lyrics(track.id().as_str()).await {
             let words = color_lyrics
                 .lyrics
@@ -150,7 +161,7 @@ async extern "Rust" fn chat(
                 .collect::<Vec<_>>()
                 .join(" ");
 
-            if words != "♪" {
+            if !words.is_empty() && words != "♪" {
                 chatbox = words.clone();
                 console = words;
 
@@ -193,12 +204,19 @@ async extern "Rust" fn load(socket: UdpSocket) -> Result<()> {
 
     // Disable lyrics if Spotify Lyrics failed to authenticate
     if let Err(error) = lyrics.refresh_authorization().await {
-        config.send_lyrics = false;
+        config.enable_lyrics = false;
         eprintln!("{error}");
     };
 
     SPOTIFY.set(spotify.clone()).expect("Failed to set SPOTIFY");
     LYRICS.set(lyrics).expect("Failed to set LYRICS");
+
+    if !config.enable_control {
+        loop {
+            // Keep the threads alive - STATUS_ACCESS_VIOLATION
+            tokio::time::sleep(Duration::from_secs(u64::MAX)).await;
+        }
+    }
 
     let mut muted_volume = None;
     let mut buf = [0u8; MTU];
@@ -222,7 +240,7 @@ async extern "Rust" fn load(socket: UdpSocket) -> Result<()> {
             muted_volume = Some(playback_state.device().volume_percent());
         }
 
-        match addr.as_ref() {
+        let request = match addr.as_ref() {
             "Play" => {
                 let OscType::Bool(play) = arg.to_owned() else {
                     continue;
@@ -296,9 +314,11 @@ async extern "Rust" fn load(socket: UdpSocket) -> Result<()> {
                 let _ = try_sync_media_state(&socket, &spotify).await;
                 continue;
             }
-        }
-        .send_async()
-        .await?;
+        };
+
+        if let Err(error) = request.send_async().await {
+            eprintln!("Spotify Control Error: {error}");
+        };
     }
 }
 

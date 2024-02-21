@@ -12,7 +12,7 @@ members = [
 ]
 
 [workspace.package]
-version = "2.6.0"
+version = "2.6.1"
 authors = ["Shayne Hartford <shaybox@shaybox.com>"]
 edition = "2021"
 readme = "README.md"

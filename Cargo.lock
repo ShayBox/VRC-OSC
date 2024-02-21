@@ -2281,7 +2281,7 @@ checksum = "d231b230927b5e4ad203db57bbcbee2802f6bce620b1e4a9024a07d94e2907ec"
 
 [[package]]
 name = "plugin-chatbox"
-version = "2.6.0"
+version = "2.6.1"
 dependencies = [
  "anyhow",
  "async-ffi",
@@ -2295,7 +2295,7 @@ dependencies = [
 
 [[package]]
 name = "plugin-clock"
-version = "2.6.0"
+version = "2.6.1"
 dependencies = [
  "anyhow",
  "derive-config",
@@ -2307,7 +2307,7 @@ dependencies = [
 
 [[package]]
 name = "plugin-control"
-version = "2.6.0"
+version = "2.6.1"
 dependencies = [
  "anyhow",
  "enigo",
@@ -2318,7 +2318,7 @@ dependencies = [
 
 [[package]]
 name = "plugin-debug"
-version = "2.6.0"
+version = "2.6.1"
 dependencies = [
  "anyhow",
  "rosc",
@@ -2327,7 +2327,7 @@ dependencies = [
 
 [[package]]
 name = "plugin-lastfm"
-version = "2.6.0"
+version = "2.6.1"
 dependencies = [
  "anyhow",
  "async-ffi",
@@ -2346,7 +2346,7 @@ dependencies = [
 
 [[package]]
 name = "plugin-spotify"
-version = "2.6.0"
+version = "2.6.1"
 dependencies = [
  "anyhow",
  "async-ffi",
@@ -2367,7 +2367,7 @@ dependencies = [
 
 [[package]]
 name = "plugin-steamvr"
-version = "2.6.0"
+version = "2.6.1"
 dependencies = [
  "anyhow",
  "derive-config",
@@ -3593,7 +3593,7 @@ checksum = "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f"
 
 [[package]]
 name = "vrc-osc"
-version = "2.6.0"
+version = "2.6.1"
 dependencies = [
  "anyhow",
  "async-ffi",

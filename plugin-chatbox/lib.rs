@@ -39,7 +39,7 @@ async extern "Rust" fn load(socket: UdpSocket) -> Result<()> {
 
     config.save()?;
 
-    let mut previous_message: (String, String) = Default::default();
+    let mut previous_message: (String, String) = config.message.clone();
     loop {
         tokio::time::sleep(Duration::from_secs(config.polling)).await;
 

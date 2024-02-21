@@ -144,8 +144,9 @@ pub async fn chat_message(
         };
 
         let (chatbox, console) = message.clone();
-        if let Ok(new_message) = chat_fn(chatbox, console, Handle::current()).await {
-            message = new_message;
+        match chat_fn(chatbox, console, Handle::current()).await {
+            Ok(new_message) => message = new_message,
+            Err(error) => eprintln!("Chatbox Error: {error}"),
         }
 
         // This appears to fix a random access violation?
