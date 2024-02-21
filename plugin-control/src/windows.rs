@@ -3,10 +3,7 @@ use std::{collections::HashMap, net::UdpSocket};
 use anyhow::Result;
 use rosc::{decoder::MTU, OscMessage, OscPacket, OscType};
 use windows::Media::{
-    Control::{
-        GlobalSystemMediaTransportControlsSession,
-        GlobalSystemMediaTransportControlsSessionManager as GSMTCSM,
-    },
+    Control::GlobalSystemMediaTransportControlsSessionManager as GSMTCSM,
     MediaPlaybackAutoRepeatMode,
 };
 
@@ -18,6 +15,7 @@ use windows::Media::{
 #[tokio::main(flavor = "current_thread")]
 pub async extern "Rust" fn load(socket: UdpSocket) -> Result<()> {
     let manager = GSMTCSM::RequestAsync()?.await?;
+    let mut previous_parameters = HashMap::new();
     let mut buf = [0u8; MTU];
 
     loop {
@@ -85,47 +83,50 @@ pub async extern "Rust" fn load(socket: UdpSocket) -> Result<()> {
                 session.TryChangePlaybackPositionAsync(playback_position)
             }
             _ => {
-                let _ = try_sync_media_state(&socket, &session);
+                let playback_info = session.GetPlaybackInfo()?;
+                let mut parameters = HashMap::new();
+
+                if let Ok(playback_status) = playback_info.PlaybackStatus() {
+                    let play = OscType::Bool(playback_status.0 == 4);
+                    if previous_parameters.get("Play") != Some(&play) {
+                        parameters.insert("Play", play.clone());
+                        previous_parameters.insert("Play", play);
+                    }
+                }
+
+                if let Ok(shuffle_ref) = playback_info.IsShuffleActive() {
+                    if let Ok(shuffle) = shuffle_ref.Value() {
+                        let shuffle = OscType::Bool(shuffle);
+                        if previous_parameters.get("Shuffle") != Some(&shuffle) {
+                            parameters.insert("Shuffle", shuffle.clone());
+                            previous_parameters.insert("Shuffle", shuffle);
+                        }
+                    }
+                }
+
+                if let Ok(repeat_mode_ref) = playback_info.AutoRepeatMode() {
+                    if let Ok(repeat_mode) = repeat_mode_ref.Value() {
+                        let repeat = OscType::Int(repeat_mode.0);
+                        if previous_parameters.get("Repeat") != Some(&repeat) {
+                            parameters.insert("Repeat", repeat.clone());
+                            previous_parameters.insert("Repeat", repeat);
+                        }
+                    }
+                }
+
+                for (param, arg) in parameters {
+                    let packet = OscPacket::Message(OscMessage {
+                        addr: format!("/avatar/parameters/VRCOSC/Media/{param}"),
+                        args: vec![arg],
+                    });
+
+                    let msg_buf = rosc::encoder::encode(&packet)?;
+                    socket.send(&msg_buf)?;
+                }
+
                 continue;
             }
         }?
         .await?;
     }
-}
-
-/// Try to synchronize the media session state to the `VRChat` menu parameters
-fn try_sync_media_state(
-    socket: &UdpSocket,
-    session: &GlobalSystemMediaTransportControlsSession,
-) -> Result<()> {
-    let playback_info = session.GetPlaybackInfo()?;
-    let mut parameters = HashMap::new();
-
-    if let Ok(playback_status) = playback_info.PlaybackStatus() {
-        parameters.insert("Play", OscType::Bool(playback_status.0 == 4));
-    }
-
-    if let Ok(shuffle_ref) = playback_info.IsShuffleActive() {
-        if let Ok(shuffle) = shuffle_ref.Value() {
-            parameters.insert("Shuffle", OscType::Bool(shuffle));
-        }
-    }
-
-    if let Ok(repeat_mode_ref) = playback_info.AutoRepeatMode() {
-        if let Ok(repeat_mode) = repeat_mode_ref.Value() {
-            parameters.insert("Repeat", OscType::Int(repeat_mode.0));
-        }
-    }
-
-    for (param, arg) in parameters {
-        let packet = OscPacket::Message(OscMessage {
-            addr: format!("/avatar/parameters/VRCOSC/Media/{param}"),
-            args: vec![arg],
-        });
-
-        let msg_buf = rosc::encoder::encode(&packet)?;
-        socket.send(&msg_buf)?;
-    }
-
-    Ok(())
 }
