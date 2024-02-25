@@ -10,3 +10,6 @@
 # Chatbox Plugin
 
 Sends messages to the chatbox
+
+## Polling
+1.5 seconds is the quickest you can send a chatbox message without being timed out for spamming

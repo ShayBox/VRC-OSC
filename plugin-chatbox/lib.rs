@@ -23,8 +23,8 @@ impl Default for Config {
                 "📻 {song} - {artists}".into(),
                 "📻 {song} - {artists}".into(),
             ),
-            send_once: false,
-            polling:   1,
+            send_once: true,
+            polling:   1500,
         }
     }
 }
@@ -41,15 +41,14 @@ async extern "Rust" fn load(socket: UdpSocket) -> Result<()> {
 
     let mut previous_message: (String, String) = config.message.clone();
     loop {
-        tokio::time::sleep(Duration::from_secs(config.polling)).await;
+        tokio::time::sleep(Duration::from_millis(config.polling)).await;
 
         let message = loader::chat_message(&config.message, &plugin_names, &loader_config).await?;
-        if message != previous_message {
-            println!("{}", message.1);
-        } else if config.send_once {
+        if message == previous_message && config.send_once {
             continue;
         }
 
+        println!("{}", message.1);
         previous_message = message.clone();
 
         let packet = OscPacket::Message(OscMessage {
