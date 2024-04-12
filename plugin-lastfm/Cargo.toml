@@ -16,7 +16,7 @@ derive-config = { workspace = true, features = ["toml"] }
 dotenvy_macro.workspace = true
 inquire.workspace = true
 serde = { workspace = true, features = ["derive"] }
-serde-this-or-that = "0.4"
+serde-this-or-that.workspace = true
 structstruck.workspace = true
 terminal-link.workspace = true
 tokio = { workspace = true, features = ["macros", "rt"] }

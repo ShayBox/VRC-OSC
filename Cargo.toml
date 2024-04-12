@@ -12,7 +12,7 @@ members = [
 ]
 
 [workspace.package]
-version = "2.6.3"
+version = "2.6.4"
 authors = ["Shayne Hartford <shaybox@shaybox.com>"]
 edition = "2021"
 readme = "README.md"
@@ -27,14 +27,15 @@ dotenvy_macro = "0.15"
 enigo = "0.1"
 ferrispot = { git = "https://github.com/Shays-Forks/Ferrispot.git", default-features = false }
 human-panic = "1"
-inquire = "0.6"
+inquire = "0.7"
 libloading = "0.8"
 ovr_overlay = { git = "https://github.com/Shays-Forks/ovr_overlay.git" }
 path-absolutize = "3"
 rosc = "0.10"
 serde = "1"
 serde_json = "1"
-spotify-lyrics = "0.0.6"
+serde-this-or-that = "0.4"
+spotify-lyrics = "0.0.7"
 structstruck = "0.4"
 terminal-link = "0.1"
 tiny_http = "0.12"
@@ -45,7 +46,7 @@ url = "2"
 vrc-osc = { path = "loader" }
 walkdir = "2"
 webbrowser = "0.8"
-windows = "0.52"
+windows = "0.54"
 winres = "0.1"
 
 # https://github.com/johnthagen/min-sized-rust
