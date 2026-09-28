@@ -32,7 +32,7 @@ This plugin fully supports the [VRCOSC Media Prefab]
 Support for additional prefabs are welcome
 
 | Parameter             | Type  |
-| --------------------- | ----- |
+|-----------------------|-------|
 | VRCOSC/Media/Play     | Bool  |
 | VRCOSC/Media/Next     | None  |
 | VRCOSC/Media/Previous | None  |

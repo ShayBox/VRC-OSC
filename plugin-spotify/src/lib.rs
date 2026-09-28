@@ -6,17 +6,17 @@ mod control;
 
 use std::{net::UdpSocket, sync::OnceLock, time::Duration};
 
-use anyhow::{bail, Result};
+use anyhow::{Result, anyhow, bail};
 use derive_config::DeriveTomlConfig;
 #[cfg(debug_assertions)]
 use dotenvy_macro::dotenv;
 use ferrispot::{
     client::{
+        SpotifyClientBuilder,
         authorization_code::{
             AsyncAuthorizationCodeUserClient,
             AsyncIncompleteAuthorizationCodeUserClient,
         },
-        SpotifyClientBuilder,
     },
     prelude::*,
     scope::Scope,
@@ -114,7 +114,7 @@ fn config() -> Result<&'static Config> {
     })
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 #[allow(clippy::needless_pass_by_value)]
 #[tokio::main(flavor = "current_thread")]
 async extern "Rust" fn load(socket: UdpSocket) -> Result<()> {
@@ -126,9 +126,10 @@ async extern "Rust" fn load(socket: UdpSocket) -> Result<()> {
     if let Err(error) = lyrics.refresh_authorization().await {
         config.enable_lyrics = false;
         eprintln!("{error}");
-    };
+    }
 
-    SPOTIFY.set(spotify.clone()).expect("Failed to set SPOTIFY");
+    #[rustfmt::skip]
+    SPOTIFY.set(spotify.clone()).map_err(|_| anyhow!("Failed to set SPOTIFY"))?;
     LYRICS.set(lyrics).expect("Failed to set LYRICS");
 
     if config.enable_control {

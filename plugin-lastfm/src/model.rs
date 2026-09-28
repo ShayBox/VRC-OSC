@@ -2,7 +2,8 @@ use serde::Deserialize;
 use serde_this_or_that::as_bool;
 
 structstruck::strike! {
-    #[strikethrough[derive(Debug, Deserialize)]]
+    #[structstruck::each[allow(dead_code)]]
+    #[structstruck::each[derive(Debug, Deserialize)]]
     pub struct LastFM {
         #[serde(rename = "recenttracks")]
         pub recent: struct {

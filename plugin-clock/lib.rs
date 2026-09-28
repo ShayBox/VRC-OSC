@@ -29,11 +29,12 @@ impl Default for Config {
     }
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 #[allow(clippy::needless_pass_by_value)]
 #[tokio::main(flavor = "current_thread")]
 async extern "Rust" fn load(socket: UdpSocket) -> Result<()> {
-    let config = Config::load()?;
+    let config = Config::load().unwrap_or_default();
+    config.save()?;
 
     loop {
         let duration = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH)?;
@@ -67,6 +68,6 @@ async extern "Rust" fn load(socket: UdpSocket) -> Result<()> {
             socket.send(&msg_buf)?;
         }
 
-        std::thread::sleep(Duration::from_millis(config.polling));
+        tokio::time::sleep(Duration::from_millis(config.polling)).await;
     }
 }

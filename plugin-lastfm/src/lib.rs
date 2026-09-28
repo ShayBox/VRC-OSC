@@ -59,7 +59,7 @@ fn config() -> Result<&'static Config> {
     })
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 #[allow(clippy::needless_pass_by_value)]
 #[tokio::main(flavor = "current_thread")]
 async extern "Rust" fn load(_: UdpSocket) -> Result<()> {
@@ -68,8 +68,8 @@ async extern "Rust" fn load(_: UdpSocket) -> Result<()> {
     Ok(())
 }
 
-#[no_mangle]
 #[async_ffi(?Send)]
+#[unsafe(no_mangle)]
 #[allow(clippy::unnecessary_wraps)]
 #[allow(clippy::needless_pass_by_value)]
 async extern "Rust" fn chat(
@@ -79,14 +79,17 @@ async extern "Rust" fn chat(
 ) -> Result<(String, String)> {
     let _enter = handle.enter();
     let config = config()?;
-    let url = format!("http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user={}&api_key={}&format=json&limit=1", config.username, config.api_key);
-    let response = ureq::get(&url).call()?;
-    let lastfm = response.into_json::<LastFM>()?;
+    let url = format!(
+        "http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user={}&api_key={}&format=json&limit=1",
+        config.username, config.api_key
+    );
+    let mut response = ureq::get(&url).call()?;
+    let lastfm = response.body_mut().read_json::<LastFM>()?;
     let tracks = lastfm
         .recent
         .tracks
         .iter()
-        .filter(|track| track.attr.as_ref().map_or(false, |attr| attr.nowplaying))
+        .filter(|track| track.attr.as_ref().is_some_and(|attr| attr.nowplaying))
         .collect::<Vec<_>>();
 
     let track = tracks.first().context("No track found")?;

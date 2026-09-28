@@ -1,7 +1,7 @@
 use std::{collections::HashMap, net::UdpSocket};
 
 use anyhow::Result;
-use rosc::{decoder::MTU, OscMessage, OscPacket, OscType};
+use rosc::{OscMessage, OscPacket, OscType, decoder::MTU};
 use windows::Media::{
     Control::GlobalSystemMediaTransportControlsSessionManager as GSMTCSM,
     MediaPlaybackAutoRepeatMode,
@@ -10,7 +10,7 @@ use windows::Media::{
 /// # Errors
 ///
 /// # Panics
-#[no_mangle]
+#[unsafe(no_mangle)]
 #[allow(clippy::needless_pass_by_value)]
 #[tokio::main(flavor = "current_thread")]
 pub async extern "Rust" fn load(socket: UdpSocket) -> Result<()> {

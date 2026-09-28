@@ -1,13 +1,20 @@
 use std::net::UdpSocket;
 
 use anyhow::Result;
-use enigo::{Enigo, Key, KeyboardControllable};
-use rosc::{decoder::MTU, OscPacket};
+use enigo::{Direction, Enigo, Key, Keyboard, Settings};
+use rosc::{OscPacket, decoder::MTU};
 
-#[no_mangle]
+/// # Errors
+/// Will return `Err` if `Enigo::new`, `UdpSocket::recv`, `decode_udp`, or `Enigo::key` fails.
+///
+/// # Panics
+/// Will panic if the infinite loop exits.
+#[unsafe(no_mangle)]
+#[allow(clippy::needless_pass_by_value)]
 #[tokio::main(flavor = "current_thread")]
-pub async fn load(socket: UdpSocket) -> Result<()> {
-    let mut enigo = Enigo::new();
+pub async extern "Rust" fn load(socket: UdpSocket) -> Result<()> {
+    let settings = Settings::default();
+    let mut enigo = Enigo::new(&settings)?;
 
     let mut buf = [0u8; MTU];
     loop {
@@ -19,17 +26,17 @@ pub async fn load(socket: UdpSocket) -> Result<()> {
 
         let addr = packet.addr.replace("/avatar/parameters/VRCOSC/Media/", "");
         match addr.as_ref() {
-            "Play" => enigo.key_click(Key::MediaPlayPause),
-            "Next" => enigo.key_click(Key::MediaNextTrack),
-            "Previous" => enigo.key_click(Key::MediaPrevTrack),
+            "Play" => enigo.key(Key::MediaPlayPause, Direction::Click),
+            "Next" => enigo.key(Key::MediaNextTrack, Direction::Click),
+            "Previous" => enigo.key(Key::MediaPrevTrack, Direction::Click),
             // "Shuffle" => continue,
             // Seeking is not required because position is not used multiple times
             // "Seeking" => continue,
-            "Muted" => enigo.key_click(Key::VolumeMute),
+            "Muted" => enigo.key(Key::VolumeMute, Direction::Click),
             // "Repeat" => continue,
             // "Volume" => continue,
             // "Position" => continue,
             _ => continue,
-        };
+        }?;
     }
 }

@@ -3,7 +3,7 @@ use std::net::UdpSocket;
 use anyhow::Result;
 use derive_config::DeriveTomlConfig;
 use inquire::Confirm;
-use loader::{Config, CARGO_PKG_HOMEPAGE};
+use loader::{CARGO_PKG_HOMEPAGE, Config};
 use rosc::decoder::MTU;
 use terminal_link::Link;
 
@@ -26,7 +26,7 @@ async fn main() -> Result<()> {
         for plugin in plugins {
             let prompt = format!("Would you like to enable the {plugin} plugin");
             if Confirm::new(&prompt).with_default(false).prompt()? {
-                config.enabled.push(plugin.clone());
+                config.enabled.push(plugin);
             }
         }
 

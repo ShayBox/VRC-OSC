@@ -22,7 +22,6 @@ terminal-link.workspace = true
 tokio = { workspace = true, features = ["macros", "rt"] }
 toml.workspace = true
 ureq = { workspace = true, features = ["json"] }
-vrc-osc.workspace = true
 
 [lints.clippy]
 pedantic = "warn"

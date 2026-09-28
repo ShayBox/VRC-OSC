@@ -151,6 +151,6 @@ pub async fn start_loop(
 
         if let Err(error) = request.send_async().await {
             eprintln!("Spotify Control Error: {error}");
-        };
+        }
     }
 }

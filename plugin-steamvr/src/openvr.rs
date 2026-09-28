@@ -9,7 +9,7 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
 structstruck::strike! {
-    #[strikethrough[derive(Debug, Serialize, Deserialize)]]
+    #[structstruck::each[derive(Debug, Serialize, Deserialize)]]
     pub struct Manifest {
         pub source: String,
         pub applications: Vec<pub struct {

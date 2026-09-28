@@ -10,6 +10,7 @@ use libloading::{Library, Symbol};
 use path_absolutize::Absolutize;
 use serde::{Deserialize, Serialize};
 use tokio::runtime::Handle;
+use ureq::ResponseExt;
 use walkdir::{DirEntry, WalkDir};
 
 pub const CARGO_PKG_VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -34,7 +35,7 @@ impl Default for Config {
 
 /// # Errors
 ///
-/// Will return `Err` if couldn't get the current exe or dir path
+/// Will return `Err` if it couldn't get the current exe or dir path
 pub fn get_plugin_names() -> Result<Vec<String>> {
     let current_exe = std::env::current_exe()?;
     let current_dir = current_exe.parent().context("This shouldn't be possible")?;
@@ -68,7 +69,7 @@ pub fn get_plugin_names() -> Result<Vec<String>> {
 
 /// # Errors
 ///
-/// Will return `Err` if couldn't get the current exe or dir path
+/// Will return `Err` if it couldn't get the current exe or dir path
 pub fn get_plugin_path(path: String) -> Result<String> {
     // libloading doesn't support relative paths on Linux
     let current_exe = std::env::current_exe()?;
@@ -81,13 +82,13 @@ pub fn get_plugin_path(path: String) -> Result<String> {
 
 /// # Errors
 ///
-/// Will return `Err` if couldn't get the current exe or dir path
+/// Will return `Err` if it couldn't get the current exe or dir path
 ///
 /// # Panics
 ///
 /// Will panic if a plugin fails to load
 pub fn load_plugins(names: Vec<String>, config: &Config) -> Result<Vec<SocketAddr>> {
-    type LoadFn = fn(socket: UdpSocket);
+    type LoadFn = fn(socket: UdpSocket) -> Result<()>;
 
     let mut addrs = Vec::new();
     for name in names {
@@ -95,6 +96,7 @@ pub fn load_plugins(names: Vec<String>, config: &Config) -> Result<Vec<SocketAdd
             continue; // Skip disabled plugins
         }
 
+        let msg = format!("Failed to load the plugin: {name}");
         let path = get_plugin_path(name)?;
         let socket = UdpSocket::bind("127.0.0.1:0")?; // Dynamic port
         let loader_addr = config.bind_addr.replace("0.0.0.0", "127.0.0.1");
@@ -110,7 +112,7 @@ pub fn load_plugins(names: Vec<String>, config: &Config) -> Result<Vec<SocketAdd
                     .expect("Failed to get the load function")
             };
 
-            load_fn(socket);
+            load_fn(socket).expect(&msg);
         });
     }
 
@@ -121,14 +123,14 @@ pub type ChatMessage = (String, String);
 
 /// # Errors
 ///
-/// Will return `Err` if couldn't get the current exe or dir path
+/// Will return `Err` if it couldn't get the current exe or dir path
 pub async fn chat_message(
     message: &ChatMessage,
     names: &[String],
     config: &Config,
 ) -> Result<ChatMessage> {
-    type ChatFn =
-        fn(chatbox: String, console: String, handle: Handle) -> FfiFuture<Result<ChatMessage>>;
+    type ChatResponse = FfiFuture<Result<ChatMessage>>;
+    type ChatFunction = fn(chatbox: String, console: String, handle: Handle) -> ChatResponse;
 
     let mut message = message.clone();
     for name in names.iter().cloned() {
@@ -139,7 +141,7 @@ pub async fn chat_message(
         let path = get_plugin_path(name)?;
         let plugin = unsafe { Library::new(path.clone()) }?;
         let chat_fn = match unsafe { plugin.get(b"chat") } {
-            Ok(chat_fn) => chat_fn as Symbol<ChatFn>,
+            Ok(chat_fn) => chat_fn as Symbol<ChatFunction>,
             Err(_) => continue,
         };
 
@@ -148,9 +150,6 @@ pub async fn chat_message(
             Ok(new_message) => message = new_message,
             Err(error) => eprintln!("Chatbox Error: {error}"),
         }
-
-        // This appears to fix a random access violation?
-        continue;
     }
 
     Ok(message)
@@ -161,7 +160,8 @@ pub async fn chat_message(
 /// Will return `Err` if couldn't get the GitHub repository
 pub fn check_for_updates() -> Result<bool> {
     let response = ureq::get(CARGO_PKG_HOMEPAGE).call()?;
-    let Some(remote_version) = response.get_url().split('/').last() else {
+    let uri = response.get_uri().to_string();
+    let Some(remote_version) = uri.split('/').next_back() else {
         return Ok(false);
     };
 

@@ -15,7 +15,7 @@ anyhow.workspace = true
 derive-config = { workspace = true, features = ["toml"] }
 rosc.workspace = true
 serde = { workspace = true, features = ["derive"] }
-tokio = { workspace = true, features = ["macros", "rt"] }
+tokio = { workspace = true, features = ["macros", "rt", "time"] }
 toml.workspace = true
 
 [lints.clippy]

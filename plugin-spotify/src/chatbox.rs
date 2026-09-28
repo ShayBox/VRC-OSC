@@ -1,4 +1,4 @@
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use async_ffi::async_ffi;
 use ferrispot::{
     model::{playback::PlayingType, track::FullTrack},
@@ -9,8 +9,8 @@ use tokio::runtime::Handle;
 
 use crate::{LYRICS, SPOTIFY};
 
-#[no_mangle]
 #[async_ffi(?Send)]
+#[unsafe(no_mangle)]
 #[allow(clippy::unnecessary_wraps)]
 #[allow(clippy::needless_pass_by_value)]
 async extern "Rust" fn chat(
@@ -34,30 +34,30 @@ async extern "Rust" fn chat(
         bail!("None")
     };
 
-    if config.enable_lyrics {
-        if let Ok(color_lyrics) = lyrics.get_color_lyrics(track.id().as_str()).await {
-            let words = color_lyrics
-                .lyrics
-                .lines
-                .iter()
-                .rev()
-                .try_find(|line| {
-                    u64::try_from(public_item.progress().as_millis())
-                        .map(|progress| line.start_time_ms < progress)
-                })
-                .iter()
-                .flatten()
-                .map(|line| line.words.clone())
-                .collect::<Vec<_>>()
-                .join(" ");
+    if let Ok(color_lyrics) = lyrics.get_color_lyrics(track.id().as_str()).await
+        && config.enable_lyrics
+    {
+        let words = color_lyrics
+            .lyrics
+            .lines
+            .iter()
+            .rev()
+            .try_find(|line| {
+                u64::try_from(public_item.progress().as_millis())
+                    .map(|progress| line.start_time_ms < progress)
+            })
+            .iter()
+            .flatten()
+            .map(|line| line.words.clone())
+            .collect::<Vec<_>>()
+            .join(" ");
 
-            if !words.is_empty() && words != "♪" {
-                chatbox = words.clone();
-                console = words;
+        if !words.is_empty() && words != "♪" {
+            chatbox = words.clone();
+            console = words;
 
-                return Ok((chatbox, console));
-            }
-        };
+            return Ok((chatbox, console));
+        }
     }
 
     replace(&mut chatbox, track);
@@ -68,6 +68,7 @@ async extern "Rust" fn chat(
     Ok((chatbox, link.to_string()))
 }
 
+#[allow(clippy::literal_string_with_formatting_args)]
 fn replace(message: &mut String, track: &FullTrack) {
     let id = &track.id().to_string();
     let song = track.name();

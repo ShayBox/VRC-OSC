@@ -19,7 +19,7 @@ impl Default for Config {
     }
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 #[allow(clippy::needless_pass_by_value)]
 #[tokio::main(flavor = "current_thread")]
 async extern "Rust" fn load(_socket: UdpSocket) -> Result<()> {
